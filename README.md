@@ -101,7 +101,23 @@ same region (Neon project is in `aws-ap-southeast-1`, Singapore) for low latency
 - **Build command:** `./build.sh`
 - **Start command:** `gunicorn health_ops_connect.wsgi:application --workers 3 --timeout 60`
 - **Environment:** `DATABASE_URL`, `SECRET_KEY`, `DEBUG=False`, `SITE_URL=https://<your-app>.onrender.com`,
-  optionally `SEED_DEMO=true` (first deploy), `TIME_ZONE`, `CURRENCY_SYMBOL`, SMTP settings — see `.env.example`.
+  the `AWS_*` object-storage variables below, optionally `SEED_DEMO=true` (first deploy), `TIME_ZONE`,
+  `CURRENCY_SYMBOL`, SMTP settings — see `.env.example`.
 
-Uploaded files (avatars, new doctor photos) are stored on local disk, which is ephemeral on Render;
-bundled demo photos are restored on every build. For real uploads, attach a Render disk or object storage.
+## File storage: Neon Object Storage
+
+Uploads (doctor photos, avatars) go to the private bucket `healthops-media` on the Neon `main` branch
+through `django-storages` (S3 API, path-style, SigV4). Files are served with signed URLs that expire
+after an hour, so nothing in the bucket is publicly readable. Configure with:
+
+```
+AWS_STORAGE_BUCKET_NAME=healthops-media
+AWS_ENDPOINT_URL_S3=<branch storage endpoint>     # Neon console → Connect → Storage
+AWS_REGION=ap-southeast-1
+AWS_ACCESS_KEY_ID=<credential token_id>           # a credential with storage:read + storage:write
+AWS_SECRET_ACCESS_KEY=<credential s3_secret_access_key>
+```
+
+Buckets branch with the database: a Neon preview branch sees the same files copy-on-write, and
+uploads there don't touch production. Without `AWS_STORAGE_BUCKET_NAME`, files stay on local disk.
+`seed_demo --media` (run by `build.sh`) uploads the bundled demo doctor photos if they're missing.

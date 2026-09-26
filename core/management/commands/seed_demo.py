@@ -8,12 +8,12 @@ Demo logins (password for all: see DEMO_PASSWORD):
 """
 
 import random
-import shutil
 from datetime import datetime, time, timedelta
 from decimal import Decimal
 from pathlib import Path
 
-from django.conf import settings
+from django.core.files import File
+from django.core.files.storage import default_storage
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Max
@@ -148,15 +148,16 @@ REVIEW_COMMENTS = [
 
 
 def _install_photo(photo, first, last):
-    """Copy a bundled demo photo into MEDIA_ROOT under a deterministic name,
-    so it can be restored on hosts with an ephemeral disk (see --media)."""
+    """Upload a bundled demo photo to the default storage (local disk or the
+    object-storage bucket) under a deterministic name. Idempotent, so it can
+    also restore photos on hosts with an ephemeral disk (see --media)."""
     src = SEED_DIR / f"{photo}.webp"
     name = f"doctors/{first.lower()}-{last.lower()}.webp"
     if not src.exists():
         return ""
-    dest = Path(settings.MEDIA_ROOT) / name
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(src, dest)
+    if not default_storage.exists(name):
+        with src.open("rb") as fh:
+            name = default_storage.save(name, File(fh, name=name))
     return name
 
 
@@ -177,7 +178,7 @@ class Command(BaseCommand):
             for first, last, photo, *_ in DOCTORS:
                 if _install_photo(photo, first, last):
                     restored += 1
-            self.stdout.write(self.style.SUCCESS(f"Restored {restored} demo photos."))
+            self.stdout.write(self.style.SUCCESS(f"Demo photos present in storage: {restored}."))
             return
         with transaction.atomic():
             if opts["today"]:
