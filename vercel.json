@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "django",
+  "buildCommand": "bash vercel-build.sh",
+  "regions": ["sin1"],
+  "functions": {
+    "health_ops_connect/wsgi.py": {
+      "maxDuration": 30,
+      "excludeFiles": "{node_modules/**,assets/**,media/**,core/seed/**,**/tests.py,*.md,render.yaml,build.sh,vercel-build.sh,package*.json}"
+    }
+  }
+}
