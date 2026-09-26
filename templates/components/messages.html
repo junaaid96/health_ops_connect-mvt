@@ -1,0 +1,15 @@
+{% load ui %}
+{% if messages %}
+<div class="pointer-events-none fixed inset-x-0 top-3 z-[60] flex flex-col items-center gap-2 px-4 sm:top-5" aria-live="polite">
+  {% for message in messages %}
+  <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, {% if message.tags == 'error' or message.tags == 'warning' %}9000{% else %}5000{% endif %})"
+       x-transition.opacity.duration.300ms
+       class="pointer-events-auto alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'warning' %}alert-warning{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} w-full max-w-lg shadow-[var(--shadow-lift)] animate-fade-in"
+       role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">
+    {% if message.tags == 'error' %}{% icon "circle-alert" "size-5 mt-0.5" %}{% elif message.tags == 'warning' %}{% icon "triangle-alert" "size-5 mt-0.5" %}{% elif message.tags == 'success' %}{% icon "circle-check" "size-5 mt-0.5" %}{% else %}{% icon "info" "size-5 mt-0.5" %}{% endif %}
+    <p class="flex-1 font-medium">{{ message }}</p>
+    <button type="button" class="-m-1 rounded-lg p-1 opacity-70 hover:opacity-100" @click="show = false" aria-label="Dismiss">{% icon "x" "size-4" %}</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

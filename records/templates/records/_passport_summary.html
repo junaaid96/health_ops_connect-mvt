@@ -1,0 +1,21 @@
+{% load ui %}
+{# Context: patient, profile #}
+<section class="card card-pad">
+  <div class="flex items-center gap-3">
+    {% include "components/avatar.html" with person=patient size="size-12" %}
+    <div class="min-w-0">
+      <p class="truncate font-semibold">{{ patient.display_name }}</p>
+      <p class="text-sm muted">{% if profile.age is not None %}{{ profile.age }} yrs{% endif %}{% if profile.sex %} · {{ profile.get_sex_display }}{% endif %}{% if profile.blood_group %} · {{ profile.blood_group }}{% endif %}{% if profile.height_cm %} · {{ profile.height_cm }} cm{% endif %}</p>
+    </div>
+  </div>
+  <div class="mt-4 rounded-2xl p-3 {% if profile.known_allergies %}bg-rose-50 ring-1 ring-rose-200 dark:bg-rose-500/10 dark:ring-rose-400/30{% else %}bg-slate-50 dark:bg-white/5{% endif %}">
+    <p class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider {% if profile.known_allergies %}text-rose-800 dark:text-rose-200{% else %}muted{% endif %}">{% icon "shield-alert" "size-3.5" %}Allergies</p>
+    <p class="mt-1 text-sm font-semibold">{% if profile.allergy_list %}{{ profile.allergy_list|join:", " }}{% else %}<span class="font-normal italic muted">Not recorded — ask the patient</span>{% endif %}</p>
+  </div>
+  <dl class="mt-4 space-y-3 text-sm">
+    <div><dt class="text-xs muted">Conditions</dt><dd class="mt-0.5">{{ profile.condition_list|join:", "|default:"None recorded" }}</dd></div>
+    <div><dt class="text-xs muted">Current medications</dt><dd class="mt-0.5">{{ profile.medication_list|join:", "|default:"None recorded" }}</dd></div>
+    <div><dt class="text-xs muted">Emergency contact</dt><dd class="mt-0.5">{% if profile.emergency_contact_name %}{{ profile.emergency_contact_name }} · {{ profile.emergency_contact_phone }}{% else %}—{% endif %}</dd></div>
+    {% if patient.phone %}<div><dt class="text-xs muted">Phone</dt><dd class="mt-0.5">{{ patient.phone }}</dd></div>{% endif %}
+  </dl>
+</section>

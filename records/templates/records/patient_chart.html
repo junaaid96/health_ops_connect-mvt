@@ -1,0 +1,18 @@
+{% extends "layouts/app.html" %}
+{% load ui static %}
+{% block title %}{{ patient.display_name }} · chart{% endblock %}
+{% block head %}<script defer src="{% static 'vendor/chart.umd.min.js' %}"></script><script defer src="{% static 'js/charts.js' %}"></script>{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-2xl font-bold">Patient record</h1>
+  <p class="flex items-center gap-1.5 text-xs muted">{% icon "eye" "size-3.5" %}This view is recorded in the patient's privacy log.</p>
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-[22rem_1fr]">
+  <div class="space-y-6">{% include "records/_passport_summary.html" %}</div>
+  <div class="space-y-6">
+    <section class="card card-pad"><h2 class="card-title">Vitals</h2><div class="mt-4">{% include "records/_vitals_charts.html" %}</div>
+      {% if not readings %}<p class="text-sm muted">No vitals recorded.</p>{% endif %}</section>
+    {% include "records/_history.html" %}
+  </div>
+</div>
+{% endblock %}

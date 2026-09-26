@@ -1,0 +1,6 @@
+{# Usage: include with person=<User> size="size-10" text="text-sm" #}
+{% if person.avatar_url %}
+<img src="{{ person.avatar_url }}" alt="" class="avatar {{ size|default:'size-10' }} object-cover object-top" loading="lazy">
+{% else %}
+<span class="avatar {{ size|default:'size-10' }} {{ text|default:'text-sm' }}" aria-hidden="true">{{ person.initials }}</span>
+{% endif %}

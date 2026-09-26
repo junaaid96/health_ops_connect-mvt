@@ -1,0 +1,36 @@
+{% load ui %}{# include with doctor=<Doctor annotated with_ratings> next=<datetime|None> #}
+<article class="card group relative flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]">
+  <div class="flex gap-4 p-4">
+    <div class="photo-frame size-20 shrink-0 rounded-2xl sm:size-24">
+      {% if doctor.photo %}
+        <img src="{{ doctor.photo.url }}" alt="Portrait of {{ doctor.name }}" class="size-full object-cover object-top mix-blend-multiply dark:mix-blend-normal" loading="lazy">
+      {% else %}
+        <span class="grid size-full place-items-center text-2xl font-bold text-brand-700 dark:text-brand-300">{{ doctor.user.initials }}</span>
+      {% endif %}
+    </div>
+    <div class="min-w-0 flex-1">
+      <p class="flex items-center gap-1.5 text-xs font-semibold text-brand-700 dark:text-brand-300">{% icon doctor.specialty.icon "size-3.5" %}{{ doctor.specialty.name }}</p>
+      <h3 class="mt-1 truncate text-base font-semibold">
+        <a href="{{ doctor.get_absolute_url }}" class="after:absolute after:inset-0 focus:outline-none">{{ doctor.name }}</a>
+      </h3>
+      <p class="truncate text-sm muted">{{ doctor.title }}{% if doctor.qualifications %} · {{ doctor.qualifications }}{% endif %}</p>
+      <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+        {% include "components/stars.html" with value=doctor.rating_avg count=doctor.rating_count %}
+        <span class="text-sm muted">{{ doctor.years_experience }} yrs exp.</span>
+      </div>
+    </div>
+  </div>
+  <div class="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-3 text-sm dark:border-white/5">
+    <div class="min-w-0">
+      {% if next %}
+        <p class="flex items-center gap-1.5 font-medium text-emerald-700 dark:text-emerald-300">{% icon "calendar-check" "size-4" %}<span class="truncate">Next: {{ next|date:"D j M, g:i A" }}</span></p>
+      {% else %}
+        <p class="flex items-center gap-1.5 muted">{% icon "calendar-x" "size-4" %}Fully booked this fortnight</p>
+      {% endif %}
+    </div>
+    <div class="flex shrink-0 items-center gap-2">
+      {% if doctor.offers_video %}<span class="badge badge-slate" title="Offers video visits">{% icon "video" "size-3.5" %}<span class="sr-only">Video visits</span></span>{% endif %}
+      <span class="font-semibold text-slate-900 dark:text-white">{{ doctor.fee|money }}</span>
+    </div>
+  </div>
+</article>

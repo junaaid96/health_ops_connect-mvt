@@ -1,0 +1,85 @@
+{% extends "layouts/public.html" %}
+{% load ui %}
+{% block title %}Confirm your visit{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+  <a href="{{ doctor.get_absolute_url }}?date={{ start|date:'Y-m-d' }}" class="btn btn-ghost btn-sm -ml-3">{% icon "arrow-left" "size-4" %}Change time</a>
+  <ol class="mt-4 flex items-center gap-3 text-sm" aria-label="Progress">
+    <li class="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">{% icon "circle-check" "size-5" %}Time</li>
+    <li class="h-px w-8 bg-slate-300 dark:bg-white/20" aria-hidden="true"></li>
+    <li class="flex items-center gap-2 font-semibold" aria-current="step"><span class="grid size-5 place-items-center rounded-full bg-brand-700 text-[11px] text-white">2</span>Intake</li>
+    <li class="h-px w-8 bg-slate-300 dark:bg-white/20" aria-hidden="true"></li>
+    <li class="flex items-center gap-2 muted"><span class="grid size-5 place-items-center rounded-full bg-slate-200 text-[11px] dark:bg-white/10">3</span>Confirmed</li>
+  </ol>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem]">
+    <form method="post" class="card card-pad space-y-6" novalidate x-data="{ severity: {{ form.severity.value|default:3 }} }">{% csrf_token %}
+      <input type="hidden" name="start" value="{{ start.isoformat }}">
+      <div>
+        <h1 class="text-2xl font-bold">Tell {{ doctor.name }} what's going on</h1>
+        <p class="mt-1 text-sm muted">Shared securely with your doctor before the visit so no time is wasted.</p>
+      </div>
+      {% include "components/form_errors.html" %}
+
+      <fieldset>
+        <legend class="label">Visit type</legend>
+        <div class="grid gap-3 sm:grid-cols-2">
+          {% for radio in form.mode %}
+          <label class="chip !flex !rounded-2xl !p-4">
+            {{ radio.tag }}
+            <span class="flex items-center gap-2">{% if radio.data.value == "video" %}{% icon "video" "size-5" %}{% else %}{% icon "building-2" "size-5" %}{% endif %}
+              <span><span class="block font-semibold">{{ radio.choice_label }}</span><span class="block text-xs font-normal muted">{% if radio.data.value == "video" %}Secure video room, join from anywhere{% else %}{{ doctor.room|default:"At the clinic" }}{% endif %}</span></span>
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+        {% for e in form.mode.errors %}<p class="error-text">{{ e }}</p>{% endfor %}
+      </fieldset>
+
+      <div hx-get="{% url 'appointments:triage_preview' %}" hx-trigger="input changed delay:500ms from:.triage-input, change from:.triage-input" hx-include=".triage-input" hx-target="#triage-hint" class="space-y-6">
+        <div>
+          <label for="{{ form.reason.id_for_label }}" class="label">{{ form.reason.label }}</label>
+          <input type="text" name="reason" id="{{ form.reason.id_for_label }}" value="{{ form.reason.value|default:'' }}" maxlength="200" required class="input triage-input" placeholder="e.g. Persistent headache and dizziness" {% if form.reason.errors %}aria-invalid="true"{% endif %}>
+          {% for e in form.reason.errors %}<p class="error-text">{{ e }}</p>{% endfor %}
+        </div>
+        <div>
+          <label for="{{ form.symptoms.id_for_label }}" class="label">{{ form.symptoms.label }} <span class="font-normal text-slate-400">(optional)</span></label>
+          <textarea name="symptoms" id="{{ form.symptoms.id_for_label }}" rows="3" class="input triage-input" placeholder="When did it start? What makes it better or worse?">{{ form.symptoms.value|default:'' }}</textarea>
+        </div>
+        <div class="grid gap-6 sm:grid-cols-2">
+          <div>
+            <label for="id_severity" class="label">How bad is it right now? <span class="font-semibold text-brand-700 dark:text-brand-300" x-text="severity + ' / 10'"></span></label>
+            <input type="range" id="id_severity" name="severity" min="1" max="10" x-model="severity" class="triage-input w-full accent-brand-600">
+            <div class="mt-1 flex justify-between text-xs muted"><span>Mild</span><span>Severe</span></div>
+          </div>
+          <div>
+            <label for="{{ form.symptom_duration.id_for_label }}" class="label">{{ form.symptom_duration.label }}</label>
+            <select name="symptom_duration" id="{{ form.symptom_duration.id_for_label }}" class="input select triage-input">
+              {% for value, label in form.fields.symptom_duration.choices %}<option value="{{ value }}" {% if form.symptom_duration.value == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="triage-hint" aria-live="polite"></div>
+
+      {% include "components/field.html" with field=form.consent %}
+      <button class="btn btn-primary btn-lg w-full">{% icon "calendar-check" "size-5" %}Confirm booking</button>
+    </form>
+
+    <aside class="space-y-4 lg:sticky lg:top-24 lg:self-start">
+      <div class="card card-pad">
+        <div class="flex items-center gap-3">
+          <span class="photo-frame size-14 shrink-0 rounded-2xl">{% if doctor.photo %}<img src="{{ doctor.photo.url }}" alt="" class="size-full object-cover object-top mix-blend-multiply dark:mix-blend-normal">{% endif %}</span>
+          <div><p class="font-semibold">{{ doctor.name }}</p><p class="text-sm muted">{{ doctor.specialty.name }}</p></div>
+        </div>
+        <dl class="mt-5 space-y-3 text-sm">
+          <div class="flex items-center justify-between"><dt class="flex items-center gap-2 muted">{% icon "calendar" "size-4" %}Date</dt><dd class="font-semibold">{{ start|date:"l, j F" }}</dd></div>
+          <div class="flex items-center justify-between"><dt class="flex items-center gap-2 muted">{% icon "clock" "size-4" %}Time</dt><dd class="font-semibold">{{ start|date:"g:i A" }} · {{ slot_minutes }} min</dd></div>
+          <div class="flex items-center justify-between"><dt class="flex items-center gap-2 muted">{% icon "wallet" "size-4" %}Fee</dt><dd class="font-semibold">{{ doctor.fee|money }} <span class="font-normal muted">pay at visit</span></dd></div>
+        </dl>
+      </div>
+      <p class="px-2 text-xs muted">Free cancellation and rescheduling up to your appointment time. You can check in digitally up to 2 hours before.</p>
+    </aside>
+  </div>
+</div>
+{% endblock %}

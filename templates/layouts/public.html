@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block body %}
+<div class="flex min-h-screen flex-col">
+  <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-slate-200/70 bg-canvas/85 backdrop-blur-md dark:border-white/10 dark:bg-canvas-dark/85">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+      {% include "components/logo.html" %}
+      <nav class="hidden items-center gap-1 md:flex" aria-label="Main">
+        <a href="{% url 'clinic:directory' %}" class="nav-link {% active '/doctors' %}">Find a doctor</a>
+        <a href="{% url 'clinic:care_finder' %}" class="nav-link {% active '/care-finder' %}">Care finder</a>
+        <a href="{% url 'operations:queue_display' %}" class="nav-link {% active '/queue' %}">Live queue</a>
+        <a href="{% url 'core:about' %}" class="nav-link {% active '/about' %}">How it works</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        {% include "components/theme_toggle.html" %}
+        {% if user.is_authenticated %}
+          <a href="{% url 'core:dashboard' %}" class="btn btn-primary btn-sm hidden sm:inline-flex">{% icon "layout-dashboard" "size-4" %}My dashboard</a>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="btn btn-ghost btn-sm hidden sm:inline-flex">Sign in</a>
+          <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-sm hidden sm:inline-flex">Get started</a>
+        {% endif %}
+        <button type="button" class="btn btn-ghost btn-sm !px-2 md:hidden" @click="open = !open" :aria-expanded="open" aria-controls="mobile-nav" aria-label="Menu">
+          {% icon "menu" "size-5" %}
+        </button>
+      </div>
+    </div>
+    <nav id="mobile-nav" x-cloak x-show="open" x-transition class="border-t border-slate-200 px-4 py-3 md:hidden dark:border-white/10" aria-label="Mobile">
+      <div class="grid gap-1">
+        <a href="{% url 'clinic:directory' %}" class="nav-link">{% icon "search" "size-4" %}Find a doctor</a>
+        <a href="{% url 'clinic:care_finder' %}" class="nav-link">{% icon "wand-sparkles" "size-4" %}Care finder</a>
+        <a href="{% url 'operations:queue_display' %}" class="nav-link">{% icon "tv" "size-4" %}Live queue</a>
+        <a href="{% url 'core:about' %}" class="nav-link">{% icon "info" "size-4" %}How it works</a>
+        <div class="divider my-2"></div>
+        {% if user.is_authenticated %}
+          <a href="{% url 'core:dashboard' %}" class="btn btn-primary">My dashboard</a>
+        {% else %}
+          <div class="grid grid-cols-2 gap-2">
+            <a href="{% url 'accounts:login' %}" class="btn btn-secondary">Sign in</a>
+            <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Get started</a>
+          </div>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+
+  {% include "components/messages.html" %}
+
+  <main id="main" class="flex-1">{% block content %}{% endblock %}</main>
+
+  <footer class="mt-24 border-t border-slate-200/70 dark:border-white/10">
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
+      <div class="md:col-span-2">
+        {% include "components/logo.html" %}
+        <p class="muted mt-4 max-w-sm text-sm leading-relaxed">Hospital operations and patient care, connected. Book in seconds, check in from your phone and keep every prescription verifiable.</p>
+        <p class="mt-4 inline-flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-800 dark:bg-rose-400/10 dark:text-rose-200">
+          {% icon "siren" "size-4" %} In an emergency, call your local emergency number.
+        </p>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold">Patients</h2>
+        <ul class="mt-3 space-y-2 text-sm muted">
+          <li><a class="hover:text-brand-700 dark:hover:text-brand-300" href="{% url 'clinic:directory' %}">Find a doctor</a></li>
+          <li><a class="hover:text-brand-700 dark:hover:text-brand-300" href="{% url 'clinic:care_finder' %}">Symptom-based care finder</a></li>
+          <li><a class="hover:text-brand-700 dark:hover:text-brand-300" href="{% url 'accounts:signup' %}">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="text-sm font-semibold">Clinicians &amp; staff</h2>
+        <ul class="mt-3 space-y-2 text-sm muted">
+          <li><a class="hover:text-brand-700 dark:hover:text-brand-300" href="{% url 'accounts:doctor_apply' %}">Join as a doctor</a></li>
+          <li><a class="hover:text-brand-700 dark:hover:text-brand-300" href="{% url 'operations:queue_display' %}">Waiting-room display</a></li>
+          <li><a class="hover:text-brand-700 dark:hover:text-brand-300" href="{% url 'accounts:login' %}">Staff sign in</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-slate-200/70 py-6 text-center text-xs muted dark:border-white/10">
+      &copy; {% now "Y" %} {{ SITE_NAME }}. Built for better, calmer care.
+    </div>
+  </footer>
+</div>
+{% endblock %}

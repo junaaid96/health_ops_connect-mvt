@@ -1,0 +1,30 @@
+{% extends "layouts/app.html" %}
+{% load ui %}
+{% block title %}Prescriptions{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold">Prescriptions</h1>
+<p class="mt-1 muted">Every prescription carries a QR code pharmacies can scan to verify it.</p>
+<div class="mt-6 grid gap-4 md:grid-cols-2">
+  {% for c in items %}
+  <article class="card card-pad flex flex-col">
+    <div class="flex items-start justify-between gap-3">
+      <div><p class="font-semibold">{{ c.diagnosis }}</p><p class="text-sm muted">{{ c.appointment.doctor.name }} · {{ c.created_at|date:"j M Y" }}</p></div>
+      <span class="badge badge-emerald">{% icon "shield-check" "size-3.5" %}{{ c.verification_code }}</span>
+    </div>
+    <ul class="mt-4 flex-1 space-y-1.5 text-sm">
+      {% for i in c.items.all %}<li class="flex items-center gap-2">{% icon "pill" "size-4 text-brand-600" %}<span class="font-medium">{{ i.medicine }}</span><span class="muted">{{ i.dosage }} · {{ i.frequency }} · {{ i.duration }}</span></li>
+      {% empty %}<li class="muted">No medicines — advice only.</li>{% endfor %}
+    </ul>
+    <div class="mt-4 flex gap-2">
+      <a href="{% url 'records:prescription' c.appointment.code %}" class="btn btn-secondary btn-sm">{% icon "printer" "size-4" %}View &amp; print</a>
+      <a href="{{ c.appointment.get_absolute_url }}" class="btn btn-ghost btn-sm">Visit details</a>
+    </div>
+  </article>
+  {% empty %}
+  <div class="card px-6 py-16 text-center md:col-span-2">
+    <span class="mx-auto grid size-12 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5">{% icon "pill" "size-6" %}</span>
+    <p class="mt-4 font-semibold">No prescriptions yet</p><p class="mt-1 text-sm muted">They'll appear here after your visits.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

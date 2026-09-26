@@ -1,0 +1,118 @@
+{% extends "layouts/app.html" %}
+{% load ui %}
+{% block title %}Visit {{ appt.code }}{% endblock %}
+{% block page_kicker %}<a href="{% url 'appointments:list' %}" class="hover:text-slate-900 dark:hover:text-white">Visits</a> / {{ appt.code }}{% endblock %}
+{% block content %}
+{% if just_booked %}
+<div class="alert alert-success mb-6 animate-fade-in">{% icon "party-popper" "size-5 mt-0.5" %}
+  <div class="flex-1"><p class="font-semibold">You're booked!</p><p>A confirmation is in your notifications{% if user.email_verified %} and inbox{% endif %}. Add it to your calendar so you don't forget.</p></div>
+  <a href="{% url 'appointments:ics' appt.code %}" class="btn btn-secondary btn-sm self-center">{% icon "calendar-plus" "size-4" %}Add to calendar</a>
+</div>
+{% endif %}
+
+<div class="grid gap-6 lg:grid-cols-[1fr_22rem]">
+  <div class="space-y-6">
+    <div class="flex flex-wrap items-center gap-4">
+      <span class="photo-frame size-16 shrink-0 rounded-2xl">{% if appt.doctor.photo %}<img src="{{ appt.doctor.photo.url }}" alt="" class="size-full object-cover object-top mix-blend-multiply dark:mix-blend-normal">{% endif %}</span>
+      <div class="min-w-0 flex-1">
+        <h1 class="text-2xl font-bold">{{ appt.doctor.name }}</h1>
+        <p class="muted">{{ appt.doctor.specialty.name }} · <span class="font-mono text-sm">{{ appt.code }}</span></p>
+      </div>
+      <div class="flex gap-2">{% if appt.urgency > 1 and appt.is_open %}{% urgency_badge appt.urgency %}{% endif %}{% status_badge appt %}</div>
+    </div>
+
+    {% include "appointments/_live_status.html" %}
+
+    {% if consultation %}
+    <section class="card card-pad" aria-labelledby="summary">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="summary" class="card-title">Visit summary</h2>
+        <a href="{% url 'records:prescription' appt.code %}" class="btn btn-primary btn-sm">{% icon "printer" "size-4" %}Prescription</a>
+      </div>
+      <dl class="mt-4 space-y-4 text-sm">
+        <div><dt class="muted">Diagnosis</dt><dd class="mt-0.5 text-base font-semibold">{{ consultation.diagnosis }}</dd></div>
+        {% if consultation.advice %}<div><dt class="muted">Advice from your doctor</dt><dd class="mt-0.5 whitespace-pre-line">{{ consultation.advice }}</dd></div>{% endif %}
+        {% if consultation.follow_up_date %}<div><dt class="muted">Follow-up</dt><dd class="mt-0.5 flex flex-wrap items-center gap-3"><span class="font-semibold">Around {{ consultation.follow_up_date|date:"l j F" }}</span><a href="{{ appt.doctor.get_absolute_url }}?date={{ consultation.follow_up_date|date:'Y-m-d' }}" class="btn btn-secondary btn-sm">{% icon "calendar-plus" "size-4" %}Book follow-up</a></dd></div>{% endif %}
+      </dl>
+      {% with items=consultation.items.all %}{% if items %}
+      <h3 class="mt-6 text-sm font-semibold">Medicines</h3>
+      <ul class="mt-2 divide-y divide-slate-100 rounded-2xl border border-slate-200 dark:divide-white/5 dark:border-white/10">
+        {% for i in items %}
+        <li class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+          <span class="flex items-center gap-2 font-semibold">{% icon "pill" "size-4 text-brand-600" %}{{ i.medicine }} <span class="font-normal muted">{{ i.dosage }}</span></span>
+          <span class="muted">{{ i.frequency }} · {{ i.duration }}{% if i.instructions %} · {{ i.instructions }}{% endif %}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}{% endwith %}
+    </section>
+    {% endif %}
+
+    {% if review_form %}
+    <section class="card card-pad" aria-labelledby="rate" x-data="{ rating: 0 }">
+      <h2 id="rate" class="card-title">How was your visit with {{ appt.doctor.user.first_name }}?</h2>
+      <p class="mt-1 text-sm muted">Your review helps other patients choose. Only your first name and initial are shown.</p>
+      <form method="post" action="{% url 'clinic:review' appt.code %}" class="mt-4 space-y-4">{% csrf_token %}
+        <fieldset class="flex gap-1" aria-label="Rating">
+          {% for n in "12345" %}
+          <label class="cursor-pointer" @mouseenter="rating = rating">
+            <input type="radio" name="rating" value="{{ n }}" class="peer sr-only" x-model.number="rating" required>
+            <svg viewBox="0 0 24 24" class="size-9 transition" :class="rating >= {{ n }} ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200 dark:fill-white/10'" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+            <span class="sr-only">{{ n }} star{{ n|pluralize }}</span>
+          </label>
+          {% endfor %}
+        </fieldset>
+        {{ review_form.comment }}
+        <button class="btn btn-primary" :disabled="!rating">Submit review</button>
+      </form>
+    </section>
+    {% elif appt.review %}
+    <section class="card card-pad"><p class="text-sm muted">You rated this visit <span class="font-semibold text-amber-500">{{ appt.review.rating }}★</span>{% if appt.review.comment %} — “{{ appt.review.comment }}”{% endif %}</p></section>
+    {% endif %}
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card card-pad">
+      <h2 class="card-title">Details</h2>
+      <dl class="mt-4 space-y-3 text-sm">
+        <div class="flex justify-between gap-3"><dt class="muted">When</dt><dd class="text-right font-medium">{{ appt.scheduled_at|date:"D j M Y" }}<br>{{ appt.scheduled_at|date:"g:i A" }} · {{ appt.duration_minutes }} min</dd></div>
+        <div class="flex justify-between gap-3"><dt class="muted">Type</dt><dd class="font-medium">{{ appt.get_mode_display }}</dd></div>
+        {% if appt.mode == "in_person" and appt.doctor.room %}<div class="flex justify-between gap-3"><dt class="muted">Where</dt><dd class="text-right font-medium">{{ appt.doctor.room }}</dd></div>{% endif %}
+        <div class="flex justify-between gap-3"><dt class="muted">Fee</dt><dd class="font-medium">{{ appt.fee|money }} · {% if appt.payment_status == "paid" %}<span class="text-emerald-700 dark:text-emerald-300">Paid</span>{% else %}{{ appt.get_payment_status_display }}{% endif %}</dd></div>
+      </dl>
+      <div class="divider my-4"></div>
+      <p class="text-xs font-semibold uppercase tracking-wider muted">Your intake</p>
+      <p class="mt-2 text-sm font-medium">{{ appt.reason }}</p>
+      {% if appt.symptoms %}<p class="mt-1 text-sm muted">{{ appt.symptoms }}</p>{% endif %}
+      <p class="mt-2 text-xs muted">Severity {{ appt.severity }}/10 · {{ appt.get_symptom_duration_display|lower }}</p>
+
+      {% if appt.is_open %}
+      <div class="mt-5 grid gap-2">
+        <a href="{% url 'appointments:ics' appt.code %}" class="btn btn-secondary">{% icon "calendar-plus" "size-4" %}Add to calendar</a>
+        {% if appt.can_reschedule and user == appt.patient %}<a href="{% url 'appointments:reschedule' appt.code %}" class="btn btn-secondary">{% icon "calendar-sync" "size-4" %}Reschedule</a>{% endif %}
+        {% if appt.can_cancel %}
+        <details class="group">
+          <summary class="btn btn-danger-ghost w-full list-none">{% icon "calendar-x" "size-4" %}Cancel visit</summary>
+          <form method="post" action="{% url 'appointments:cancel' appt.code %}" class="mt-2 space-y-2 rounded-xl bg-rose-50 p-3 dark:bg-rose-500/10">{% csrf_token %}
+            {{ cancel_form.reason }}
+            <button class="btn btn-danger btn-sm w-full">Yes, cancel this visit</button>
+          </form>
+        </details>
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+
+    <section class="card card-pad">
+      <h2 class="card-title">Timeline</h2>
+      <ol class="mt-4 space-y-4 border-l-2 border-slate-100 pl-5 text-sm dark:border-white/10">
+        <li class="relative"><span class="absolute -left-[27px] top-1 size-3 rounded-full bg-brand-600 ring-4 ring-white dark:ring-slate-900"></span><p class="font-medium">Booked</p><p class="text-xs muted">{{ appt.created_at|date:"j M, g:i A" }}</p></li>
+        {% if appt.checked_in_at %}<li class="relative"><span class="absolute -left-[27px] top-1 size-3 rounded-full bg-violet-500 ring-4 ring-white dark:ring-slate-900"></span><p class="font-medium">Checked in · token {{ appt.token }}</p><p class="text-xs muted">{{ appt.checked_in_at|date:"j M, g:i A" }}</p></li>{% endif %}
+        {% if appt.started_at %}<li class="relative"><span class="absolute -left-[27px] top-1 size-3 rounded-full bg-amber-500 ring-4 ring-white dark:ring-slate-900"></span><p class="font-medium">Consultation started</p><p class="text-xs muted">{{ appt.started_at|date:"j M, g:i A" }}</p></li>{% endif %}
+        {% if appt.completed_at %}<li class="relative"><span class="absolute -left-[27px] top-1 size-3 rounded-full bg-emerald-500 ring-4 ring-white dark:ring-slate-900"></span><p class="font-medium">Completed</p><p class="text-xs muted">{{ appt.completed_at|date:"j M, g:i A" }}</p></li>{% endif %}
+        {% if appt.cancelled_at %}<li class="relative"><span class="absolute -left-[27px] top-1 size-3 rounded-full bg-slate-400 ring-4 ring-white dark:ring-slate-900"></span><p class="font-medium">Cancelled{% if appt.cancelled_by and appt.cancelled_by != appt.patient %} by the clinic{% endif %}</p><p class="text-xs muted">{{ appt.cancelled_at|date:"j M, g:i A" }}</p></li>{% endif %}
+      </ol>
+    </section>
+  </aside>
+</div>
+{% endblock %}

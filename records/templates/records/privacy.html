@@ -1,0 +1,28 @@
+{% extends "layouts/app.html" %}
+{% load ui %}
+{% block title %}Privacy log{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+  <h1 class="text-2xl font-bold">Privacy log</h1>
+  <p class="mt-1 muted">Every time a clinician or staff member opens or changes your record, it's written here. You can't edit it — and neither can they.</p>
+  <div class="card mt-6 overflow-hidden">
+    <ul class="divide-y divide-slate-100 dark:divide-white/5">
+      {% for log in logs %}
+      <li class="flex items-center gap-4 px-5 py-4">
+        <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-300">
+          {% if log.action == "prescribe" %}{% icon "file-pen" "size-4" %}{% elif log.action == "vitals" %}{% icon "activity" "size-4" %}{% elif log.action == "admit" %}{% icon "bed-double" "size-4" %}{% else %}{% icon "eye" "size-4" %}{% endif %}
+        </span>
+        <div class="min-w-0 flex-1 text-sm">
+          <p><span class="font-semibold">{{ log.actor.display_name|default:"Deleted user" }}</span> <span class="muted">{{ log.get_action_display|lower }}</span></p>
+          {% if log.detail %}<p class="truncate text-xs muted">{{ log.detail }}</p>{% endif %}
+        </div>
+        <time class="shrink-0 text-xs muted" datetime="{{ log.created_at.isoformat }}">{{ log.created_at|date:"j M, g:i A" }}</time>
+      </li>
+      {% empty %}
+      <li class="px-6 py-16 text-center"><span class="mx-auto grid size-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">{% icon "shield-check" "size-6" %}</span><p class="mt-4 font-semibold">No one has accessed your record yet</p></li>
+      {% endfor %}
+    </ul>
+  </div>
+  <p class="mt-4 text-xs muted">See something you don't recognise? Contact the hospital's privacy officer.</p>
+</div>
+{% endblock %}
