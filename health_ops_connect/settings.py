@@ -15,8 +15,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
-    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1", ".onrender.com"]),
-    CSRF_TRUSTED_ORIGINS=(list, ["https://*.onrender.com"]),
+    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1", ".onrender.com", ".vercel.app"]),
+    CSRF_TRUSTED_ORIGINS=(list, ["https://*.onrender.com", "https://*.vercel.app"]),
 )
 environ.Env.read_env(BASE_DIR / ".env")
 
@@ -82,6 +82,8 @@ WSGI_APPLICATION = "health_ops_connect.wsgi.application"
 # Production uses Neon serverless Postgres via DATABASE_URL (use the *pooled*
 # connection string, i.e. the host containing "-pooler"). Without it we fall
 # back to a local SQLite file so tests and quick hacking work offline.
+# On serverless hosts (Vercel) set DB_CONN_MAX_AGE=0 so idle instances don't
+# hold connections; Neon's pooler makes reconnecting cheap.
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",

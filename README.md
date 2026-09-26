@@ -96,6 +96,16 @@ postgresql://USER:PASSWORD@ep-xxxx-pooler.<region>.aws.neon.tech/healthops?sslmo
 Copy it from the Neon console → project **health-ops-connect** → *Connect*. Keep Render and Neon in the
 same region (Neon project is in `aws-ap-southeast-1`, Singapore) for low latency.
 
+## Deploy on Vercel
+
+Live: https://health-ops-connect.vercel.app
+
+Vercel detects Django (`manage.py` → `WSGI_APPLICATION`), installs `requirements.txt`, runs
+`collectstatic` and serves static files from its CDN. `vercel.json` pins the function to `sin1`
+(Singapore, next to the Neon database and bucket) and runs `vercel-build.sh`, which applies
+migrations, makes sure the demo photos are in object storage and — with `SEED_DEMO=true` — loads the
+demo hospital. Set the same environment variables as below plus `DB_CONN_MAX_AGE=0`.
+
 ## Deploy on Render
 
 - **Build command:** `./build.sh`
