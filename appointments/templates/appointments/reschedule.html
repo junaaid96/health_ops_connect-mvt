@@ -1,0 +1,11 @@
+{% extends "layouts/app.html" %}
+{% load ui %}
+{% block title %}Reschedule{% endblock %}
+{% block content %}
+<div class="max-w-2xl">
+  <a href="{{ appt.get_absolute_url }}" class="btn btn-ghost btn-sm -ml-3">{% icon "arrow-left" "size-4" %}Back to visit</a>
+  <h1 class="mt-2 text-2xl font-bold">Pick a new time</h1>
+  <p class="mt-1 muted">Currently {{ appt.scheduled_at|date:"l j F, g:i A" }} with {{ doctor.name }}. Your old slot is released as soon as you confirm.</p>
+  <div class="card card-pad mt-6">{% include "clinic/_slot_picker.html" %}</div>
+</div>
+{% endblock %}

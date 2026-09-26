@@ -1,0 +1,25 @@
+{% load ui %}
+<div class="htmx-hide-on-request">
+  <p class="text-sm muted" aria-live="polite"><span class="font-semibold text-slate-900 dark:text-white">{{ total }}</span> doctor{{ total|pluralize }} found</p>
+  {% if page.object_list %}
+  <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    {% for doctor in page.object_list %}
+      {% include "components/doctor_card.html" with next=soonest|get_item:doctor.pk %}
+    {% endfor %}
+  </div>
+  {% if page.has_other_pages %}
+  <nav class="mt-8 flex items-center justify-center gap-2" aria-label="Pagination">
+    {% if page.has_previous %}<a class="btn btn-secondary btn-sm" href="?{% url_replace page=page.previous_page_number %}">{% icon "chevron-left" "size-4" %}Previous</a>{% endif %}
+    <span class="text-sm muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a class="btn btn-secondary btn-sm" href="?{% url_replace page=page.next_page_number %}">Next{% icon "chevron-right" "size-4" %}</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="card mt-4 px-6 py-16 text-center">
+    <span class="mx-auto grid size-12 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5">{% icon "search-x" "size-6" %}</span>
+    <p class="mt-4 font-semibold">No doctors match those filters</p>
+    <p class="mt-1 text-sm muted">Try widening availability or clearing the specialty.</p>
+    <a href="{% url 'clinic:directory' %}" class="btn btn-secondary mt-5">Clear filters</a>
+  </div>
+  {% endif %}
+</div>

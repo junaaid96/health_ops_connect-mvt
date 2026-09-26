@@ -1,0 +1,4 @@
+circle
+calendar-check map-pin-check stethoscope circle-check circle-x user-x leaf clock-alert siren
+heart-pulse sparkles baby bone brain soup ear flower-2 smile eye droplets wind
+info triangle-alert circle-alert check x

@@ -1,0 +1,24 @@
+{% extends "layouts/auth.html" %}
+{% load ui %}
+{% block title %}Create your account{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold">Create your account</h1>
+<p class="mt-2 muted">It takes a minute. You'll be able to book straight away.</p>
+
+{% include "components/form_errors.html" %}
+<form method="post" class="mt-8 space-y-5" novalidate>
+  {% csrf_token %}
+  <div class="grid gap-5 sm:grid-cols-2">
+    {% include "components/field.html" with field=form.first_name %}
+    {% include "components/field.html" with field=form.last_name %}
+  </div>
+  {% include "components/field.html" with field=form.email %}
+  {% include "components/field.html" with field=form.phone %}
+  {% include "components/field.html" with field=form.password1 %}
+  {% include "components/field.html" with field=form.password2 %}
+  <button type="submit" class="btn btn-primary btn-lg w-full">Create account</button>
+  <p class="text-center text-xs muted">By continuing you agree to share the details you enter with the clinicians you book.</p>
+</form>
+<p class="mt-8 text-center text-sm muted">Already have an account? <a href="{% url 'accounts:login' %}" class="font-semibold text-brand-700 hover:underline dark:text-brand-300">Sign in</a></p>
+<p class="mt-2 text-center text-sm muted">Are you a clinician? <a href="{% url 'accounts:doctor_apply' %}" class="font-semibold text-brand-700 hover:underline dark:text-brand-300">Join as a doctor</a></p>
+{% endblock %}

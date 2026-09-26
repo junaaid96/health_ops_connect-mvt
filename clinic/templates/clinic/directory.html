@@ -1,0 +1,55 @@
+{% extends "layouts/public.html" %}
+{% load ui %}
+{% block title %}Find a doctor{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <p class="eyebrow">Directory</p>
+      <h1 class="mt-2 text-3xl font-bold">Find a doctor</h1>
+      <p class="mt-2 muted">Live availability for the next {{ request.GET.available|default:"14 days" }}. Not sure who to see? <a class="font-semibold text-brand-700 hover:underline dark:text-brand-300" href="{% url 'clinic:care_finder' %}">Try the care finder</a>.</p>
+    </div>
+  </div>
+
+  <form id="filters" class="mt-8 grid gap-3 md:grid-cols-[1fr_auto_auto_auto_auto]" role="search"
+        hx-get="{% url 'clinic:directory' %}" hx-target="#results" hx-trigger="input changed delay:300ms from:input[name=q], change" hx-push-url="true" hx-indicator="#results">
+    <label class="relative block">
+      <span class="sr-only">Search doctors</span>
+      <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">{% icon "search" "size-[18px]" %}</span>
+      <input name="q" value="{{ filters.q }}" class="input pl-10" placeholder="Name, specialty, language…" autocomplete="off">
+    </label>
+    <label><span class="sr-only">Visit type</span>
+      <select name="mode" class="input select">
+        <option value="">Any visit type</option>
+        <option value="in_person" {% if filters.mode == "in_person" %}selected{% endif %}>In person</option>
+        <option value="video" {% if filters.mode == "video" %}selected{% endif %}>Video visit</option>
+      </select></label>
+    <label><span class="sr-only">Availability</span>
+      <select name="available" class="input select">
+        <option value="">Any availability</option>
+        <option value="today" {% if filters.available == "today" %}selected{% endif %}>Available today</option>
+        <option value="week" {% if filters.available == "week" %}selected{% endif %}>This week</option>
+      </select></label>
+    <label><span class="sr-only">Maximum fee</span>
+      <select name="max_fee" class="input select">
+        <option value="">Any fee</option>
+        <option value="50" {% if filters.max_fee == "50" %}selected{% endif %}>Up to {{ CURRENCY }}50</option>
+        <option value="75" {% if filters.max_fee == "75" %}selected{% endif %}>Up to {{ CURRENCY }}75</option>
+        <option value="100" {% if filters.max_fee == "100" %}selected{% endif %}>Up to {{ CURRENCY }}100</option>
+      </select></label>
+    <label><span class="sr-only">Sort by</span>
+      <select name="sort" class="input select">
+        {% for key, label in sorts.items %}<option value="{{ key }}" {% if filters.sort == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select></label>
+    <div class="flex gap-2 overflow-x-auto pb-1 md:col-span-5" role="radiogroup" aria-label="Specialty">
+      <label class="shrink-0"><input type="radio" name="specialty" value="" class="peer sr-only" {% if not filters.specialty %}checked{% endif %}><span class="chip">All specialties</span></label>
+      {% for s in specialties %}{% if s.n %}
+      <label class="shrink-0"><input type="radio" name="specialty" value="{{ s.slug }}" class="peer sr-only" {% if filters.specialty == s.slug %}checked{% endif %}><span class="chip">{% icon s.icon "size-4" %}{{ s.name }}</span></label>
+      {% endif %}{% endfor %}
+    </div>
+    <noscript><button class="btn btn-primary">Apply filters</button></noscript>
+  </form>
+
+  <div id="results" class="mt-6">{% include "clinic/_doctor_results.html" %}</div>
+</div>
+{% endblock %}

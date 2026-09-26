@@ -1,0 +1,43 @@
+{% extends "layouts/public.html" %}
+{% load ui %}
+{% block title %}How it works{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-4xl px-4 py-14 sm:px-6">
+  <p class="eyebrow">How it works</p>
+  <h1 class="mt-2 text-4xl font-bold">One system for patients, doctors and the front desk</h1>
+  <p class="mt-4 text-lg muted">HealthOPS Connect replaces the phone queue, the paper token and the crowded waiting room with a calm, transparent flow.</p>
+
+  <div class="mt-12 space-y-6">
+    <section class="card card-pad">
+      <h2 class="flex items-center gap-3 text-xl font-semibold"><span class="grid size-10 place-items-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-400/10 dark:text-brand-300">{% icon "user-round" "size-5" %}</span>For patients</h2>
+      <ul class="mt-4 grid gap-3 text-[15px] sm:grid-cols-2">
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Care finder routes symptoms to a specialty and explains why — and flags emergencies.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Book real slots, in person or video; reschedule or cancel yourself.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Digital intake before the visit so no time is wasted.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Check in from your phone; live token and honest wait estimate.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Health passport, vitals trends, verifiable prescriptions.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}A privacy log of everyone who opened your record.</li>
+      </ul>
+    </section>
+    <section class="card card-pad">
+      <h2 class="flex items-center gap-3 text-xl font-semibold"><span class="grid size-10 place-items-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-400/10 dark:text-brand-300">{% icon "stethoscope" "size-5" %}</span>For doctors</h2>
+      <ul class="mt-4 grid gap-3 text-[15px] sm:grid-cols-2">
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Weekly hours become bookable slots automatically; time off in one click.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}A triage-ordered queue with one-click “call next”.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Consultation workspace with intake, allergies, vitals and history side by side.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}E-prescriptions with automatic allergy checks and QR verification.</li>
+      </ul>
+    </section>
+    <section class="card card-pad">
+      <h2 class="flex items-center gap-3 text-xl font-semibold"><span class="grid size-10 place-items-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-400/10 dark:text-brand-300">{% icon "activity" "size-5" %}</span>For hospital operations</h2>
+      <ul class="mt-4 grid gap-3 text-[15px] sm:grid-cols-2">
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Command center: visits, waiting times, urgent cases, revenue and occupancy.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Front desk check-in, payments and no-show tracking.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Bed board with admissions, discharge and cleaning workflow.</li>
+        <li class="flex gap-2">{% icon "check" "size-5 text-emerald-600" %}Doctor licence verification and a public waiting-room screen.</li>
+      </ul>
+    </section>
+  </div>
+  <div class="mt-12 flex flex-wrap gap-3"><a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-lg">Create an account</a><a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-lg">Try the demo</a></div>
+</div>
+{% endblock %}

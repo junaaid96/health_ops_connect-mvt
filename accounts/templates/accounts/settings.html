@@ -1,0 +1,40 @@
+{% extends "layouts/app.html" %}
+{% load ui %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+  <h1 class="text-2xl font-bold">Account settings</h1>
+  <p class="mt-1 muted">Your contact details are used for appointment reminders and verification.</p>
+
+  <form method="post" enctype="multipart/form-data" class="card card-pad mt-6 space-y-5" novalidate>{% csrf_token %}
+    {% include "components/form_errors.html" %}
+    <div class="flex items-center gap-4">
+      {% include "components/avatar.html" with person=user size="size-16" text="text-lg" %}
+      <div class="flex-1">{% include "components/field.html" with field=form.avatar label="Profile photo" %}</div>
+    </div>
+    <div class="grid gap-5 sm:grid-cols-2">
+      {% include "components/field.html" with field=form.first_name %}
+      {% include "components/field.html" with field=form.last_name %}
+      <div>
+        {% include "components/field.html" with field=form.email %}
+        <p class="mt-1.5 flex items-center gap-1 text-xs {% if user.email_verified %}text-emerald-700 dark:text-emerald-300{% else %}text-amber-700 dark:text-amber-300{% endif %}">
+          {% if user.email_verified %}{% icon "badge-check" "size-3.5" %}Verified{% else %}{% icon "mail-warning" "size-3.5" %}Not verified yet{% endif %}
+        </p>
+      </div>
+      {% include "components/field.html" with field=form.phone %}
+    </div>
+    <div class="flex justify-end"><button class="btn btn-primary">Save changes</button></div>
+  </form>
+
+  <div class="card card-pad mt-6 flex flex-wrap items-center justify-between gap-4">
+    <div><h2 class="card-title">Password</h2><p class="text-sm muted">We'll email you a secure link to set a new one.</p></div>
+    <a href="{% url 'accounts:password_reset' %}" class="btn btn-secondary">{% icon "key-round" "size-4" %}Reset password</a>
+  </div>
+  {% if user.is_doctor %}
+  <div class="card card-pad mt-6 flex flex-wrap items-center justify-between gap-4">
+    <div><h2 class="card-title">Professional profile</h2><p class="text-sm muted">Fees, bio, visit types and weekly hours.</p></div>
+    <a href="{% url 'clinic:schedule' %}" class="btn btn-secondary">{% icon "calendar-clock" "size-4" %}Schedule &amp; profile</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "layouts/public.html" %}
+{% load ui %}
+{% block title %}Verify prescription{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-lg px-4 py-16">
+  {% if c %}
+  <div class="card overflow-hidden">
+    <div class="flex items-center gap-4 bg-emerald-600 p-6 text-white">
+      <span class="grid size-12 place-items-center rounded-2xl bg-white/15">{% icon "shield-check" "size-7" %}</span>
+      <div><p class="text-sm font-semibold uppercase tracking-wider text-emerald-100">Verified</p><h1 class="text-xl font-bold text-white">Genuine prescription</h1></div>
+    </div>
+    <dl class="divide-y divide-slate-100 text-sm dark:divide-white/5">
+      <div class="flex justify-between gap-4 px-6 py-3"><dt class="muted">Code</dt><dd class="font-mono font-semibold">{{ c.verification_code }}</dd></div>
+      <div class="flex justify-between gap-4 px-6 py-3"><dt class="muted">Issued</dt><dd class="font-semibold">{{ c.created_at|date:"j M Y, g:i A" }}</dd></div>
+      <div class="flex justify-between gap-4 px-6 py-3"><dt class="muted">Prescriber</dt><dd class="text-right font-semibold">{{ c.appointment.doctor.name }}<br><span class="font-normal muted">{{ c.appointment.doctor.specialty.name }}{% if c.appointment.doctor.license_number %} · {{ c.appointment.doctor.license_number }}{% endif %}</span></dd></div>
+      <div class="flex justify-between gap-4 px-6 py-3"><dt class="muted">Patient</dt><dd class="font-semibold">{{ c.appointment.patient.first_name|slice:":1" }}. {{ c.appointment.patient.last_name|slice:":1" }}.</dd></div>
+      <div class="flex justify-between gap-4 px-6 py-3"><dt class="muted">Items</dt><dd class="font-semibold">{{ c.items.count }} medicine{{ c.items.count|pluralize }}</dd></div>
+    </dl>
+    <p class="border-t border-slate-100 px-6 py-4 text-xs muted dark:border-white/5">For privacy we only show initials. Compare the items with the paper copy presented to you.</p>
+  </div>
+  {% else %}
+  <div class="card card-pad text-center">
+    <span class="mx-auto grid size-14 place-items-center rounded-2xl bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300">{% icon "shield-x" "size-7" %}</span>
+    <h1 class="mt-5 text-xl font-bold">No prescription found</h1>
+    <p class="mt-2 text-sm muted">Code <span class="font-mono">{{ code }}</span> doesn't match any prescription issued by {{ SITE_NAME }}. Don't dispense — contact the prescriber.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

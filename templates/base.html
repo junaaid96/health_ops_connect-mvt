@@ -1,31 +1,35 @@
-{% load static %}
-
-<!DOCTYPE html>
-<html lang="en">
-
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="h-full">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="healthOPS Connect" />
-    <title>{% block title %} {% endblock %}</title>
-    <!-- Tailwind CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" />
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ SITE_NAME }}{% endblock %}{% block title_suffix %} · {{ SITE_NAME }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}Book the right doctor in seconds, check in from your phone, skip the waiting room and keep your health records in one secure place.{% endblock %}">
+  <meta name="theme-color" content="#0d6b62">
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script>
+    // Apply the saved theme before first paint to avoid a flash.
+    (function () {
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script defer src="{% static 'vendor/htmx.min.js' %}"></script>
+  <script defer src="{% static 'js/app.js' %}"></script>
+  <script defer src="{% static 'vendor/alpine.min.js' %}"></script>
+  {% block head %}{% endblock %}
 </head>
-
-<body>
-    <!-- Navbar -->
-    {% include 'navbar.html' %}
-
-    <!-- Showing Messages -->
-    <div class="w-1/2 m-auto">{% include 'messages.html' %}</div>
-
-    <!-- Content -->
-    <div class="min-h-screen">{% block content %} {% endblock %}</div>
-
-    <!-- Footer -->
-    {% include 'footer.html' %}
+<body class="min-h-full {% block body_class %}{% endblock %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <a href="#main" class="skip-link">Skip to content</a>
+  {% block body %}{% endblock %}
+  {% block scripts %}{% endblock %}
 </body>
-
 </html>

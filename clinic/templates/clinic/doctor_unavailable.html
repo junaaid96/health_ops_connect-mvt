@@ -1,0 +1,11 @@
+{% extends "layouts/public.html" %}
+{% load ui %}
+{% block title %}Profile unavailable{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-xl px-4 py-24 text-center">
+  <span class="mx-auto grid size-14 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5">{% icon "user-x" "size-7" %}</span>
+  <h1 class="mt-6 text-2xl font-bold">This profile isn't available</h1>
+  <p class="mt-2 muted">The doctor may still be under verification or no longer taking patients.</p>
+  <a href="{% url 'clinic:directory' %}" class="btn btn-primary mt-8">Browse other doctors</a>
+</div>
+{% endblock %}

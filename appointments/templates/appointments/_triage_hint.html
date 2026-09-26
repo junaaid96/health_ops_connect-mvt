@@ -1,0 +1,14 @@
+{% load ui %}
+{% if text %}
+  {% if result.is_emergency %}
+  <div class="alert alert-error" role="alert">{% icon "siren" "size-5 mt-0.5" %}
+    <div><p class="font-semibold">Please don't wait for this appointment.</p>
+      {% for f in result.red_flags %}<p class="mt-1">“{{ f.phrase }}” — {{ f.message }}</p>{% endfor %}
+      <p class="mt-1">Call your local emergency number now. You can still book a follow-up.</p></div>
+  </div>
+  {% elif result.urgency == 3 %}
+  <div class="alert alert-warning">{% icon "clock-alert" "size-5 mt-0.5" %}<p>High severity noted — you'll be prioritised in the queue. If it gets worse, seek urgent care.</p></div>
+  {% elif result.matches and result.matches.0.matched %}
+  <div class="alert alert-info">{% icon "info" "size-5 mt-0.5" %}<p>Your doctor will see this before the visit. Priority: <strong>{{ result.urgency_label|lower }}</strong>.</p></div>
+  {% endif %}
+{% endif %}

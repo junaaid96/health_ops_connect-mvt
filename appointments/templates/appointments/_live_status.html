@@ -1,0 +1,59 @@
+{% load ui %}
+<section id="live-status" class="card overflow-hidden"
+  {% if appt.is_open and appt.local_date|date:"Ymd" == now|date:"Ymd" %}hx-get="{% url 'appointments:live' appt.code %}" hx-trigger="every 15s" hx-swap="outerHTML"{% endif %}
+  aria-live="polite">
+  {% if appt.status == "in_progress" %}
+    <div class="bg-brand-700 p-6 text-white dark:bg-brand-600">
+      <p class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-brand-100"><span class="size-2 animate-pulse rounded-full bg-white"></span>It's your turn</p>
+      <p class="mt-2 text-2xl font-bold text-white">{{ appt.doctor.name }} is ready for you</p>
+      {% if appt.mode == "video" %}
+        <a href="{% url 'appointments:join_video' appt.code %}" target="_blank" rel="noopener" class="btn btn-lg mt-5 bg-white text-brand-800 hover:bg-brand-50">{% icon "video" "size-5" %}Join video call</a>
+      {% else %}
+        <p class="mt-2 flex items-center gap-2 text-brand-50">{% icon "map-pin" "size-5" %}Please proceed to {{ appt.doctor.room|default:"the consultation room" }}.</p>
+      {% endif %}
+    </div>
+  {% elif appt.status == "checked_in" %}
+    <div class="grid gap-6 p-6 sm:grid-cols-[auto_1fr]">
+      <div class="rounded-2xl bg-brand-50 px-6 py-4 text-center dark:bg-brand-400/10">
+        <p class="text-xs font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">Your token</p>
+        <p class="text-5xl font-extrabold tabular-nums tracking-tight">{{ appt.token }}</p>
+      </div>
+      <div class="flex flex-col justify-center">
+        {% if queue_entry %}
+          <p class="text-sm muted">{% if queue_entry.position == 1 %}{% if queue.current %}You're next{% else %}You're next — the doctor will call you shortly{% endif %}{% else %}{{ queue_entry.position|add:"-1" }} patient{{ queue_entry.position|add:"-1"|pluralize }} ahead of you{% endif %}</p>
+          <p class="mt-1 text-3xl font-bold tabular-nums">~{{ queue_entry.wait_minutes }} min</p>
+          <p class="text-sm muted">Estimated around {{ queue_entry.eta|time:"g:i A" }} · based on {{ appt.doctor.user.first_name }}'s average of {{ queue.avg_minutes }} min per visit</p>
+          <div class="mt-3 flex gap-1" aria-hidden="true">
+            {% for e in queue.waiting %}<span class="h-2 flex-1 rounded-full {% if e.appointment.pk == appt.pk %}bg-brand-600{% elif e.position < queue_entry.position %}bg-brand-200 dark:bg-brand-400/30{% else %}bg-slate-100 dark:bg-white/10{% endif %}"></span>{% endfor %}
+          </div>
+          <p class="mt-3 text-xs muted">Wait wherever you like — we'll notify you when it's your turn. Priority follows clinical urgency, so order can change.</p>
+        {% else %}
+          <p class="font-semibold">You're checked in.</p>
+        {% endif %}
+      </div>
+    </div>
+  {% elif appt.status == "booked" %}
+    <div class="flex flex-wrap items-center justify-between gap-4 p-6">
+      <div>
+        <p class="text-sm muted">Your visit starts</p>
+        <p class="text-2xl font-bold" data-countdown="{{ appt.scheduled_at.isoformat }}">{{ appt.scheduled_at|timeuntil }}</p>
+        <p class="text-sm muted">{{ appt.scheduled_at|date:"l j F, g:i A" }}</p>
+      </div>
+      {% if appt.can_check_in %}
+        <form method="post" action="{% url 'appointments:check_in' appt.code %}">{% csrf_token %}
+          <button class="btn btn-primary btn-lg animate-pulse-ring">{% icon "map-pin-check" "size-5" %}Check in now</button>
+        </form>
+      {% elif appt.can_join_video %}
+        <a href="{% url 'appointments:join_video' appt.code %}" target="_blank" rel="noopener" class="btn btn-primary btn-lg">{% icon "video" "size-5" %}Join video call</a>
+      {% else %}
+        <p class="max-w-xs text-sm muted">{% if appt.mode == "video" %}The video room opens 15 minutes before your visit.{% else %}Digital check-in opens 2 hours before your visit.{% endif %}</p>
+      {% endif %}
+    </div>
+  {% elif appt.status == "completed" %}
+    <div class="flex items-center gap-4 p-6"><span class="grid size-11 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">{% icon "circle-check" "size-6" %}</span>
+      <div><p class="font-semibold">Visit completed</p><p class="text-sm muted">{{ appt.completed_at|date:"l j F, g:i A" }}</p></div></div>
+  {% else %}
+    <div class="flex items-center gap-4 p-6"><span class="grid size-11 place-items-center rounded-xl bg-slate-100 text-slate-600 dark:bg-white/5">{% icon "circle-x" "size-6" %}</span>
+      <div><p class="font-semibold">{{ appt.get_status_display }}</p>{% if appt.cancel_reason %}<p class="text-sm muted">{{ appt.cancel_reason }}</p>{% endif %}</div></div>
+  {% endif %}
+</section>

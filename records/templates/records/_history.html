@@ -1,0 +1,16 @@
+{% load ui %}
+<section class="card card-pad">
+  <h2 class="card-title">Previous visits</h2>
+  <ol class="mt-4 space-y-4">
+    {% for h in history %}
+    <li class="flex gap-3">
+      <span class="mt-1 size-2.5 shrink-0 rounded-full {% if h.status == 'completed' %}bg-emerald-500{% elif h.status == 'cancelled' or h.status == 'no_show' %}bg-slate-300{% else %}bg-sky-500{% endif %}"></span>
+      <div class="min-w-0 text-sm">
+        <p class="font-medium">{% if h.consultation %}{{ h.consultation.diagnosis }}{% else %}{{ h.reason }}{% endif %}</p>
+        <p class="text-xs muted">{{ h.scheduled_at|date:"j M Y" }} · {{ h.doctor.name }} · {{ h.get_status_display }}</p>
+        {% if h.consultation %}{% with items=h.consultation.items.all %}{% if items %}<p class="mt-1 text-xs muted">{% for i in items %}{{ i.medicine }} {{ i.dosage }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}{% endwith %}{% endif %}
+      </div>
+    </li>
+    {% empty %}<li class="text-sm muted">First visit.</li>{% endfor %}
+  </ol>
+</section>

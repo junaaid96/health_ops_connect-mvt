@@ -1,0 +1,10 @@
+{% extends "layouts/public.html" %}
+{% block title %}You don't have access to this page{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-xl px-4 py-24 text-center">
+  <p class="text-7xl font-extrabold text-brand-700 dark:text-brand-400">403</p>
+  <h1 class="mt-4 text-2xl font-bold">You don't have access to this page</h1>
+  <p class="mt-2 muted">This area is for a different role. If you think that's a mistake, contact the hospital admin.</p>
+  <div class="mt-8 flex justify-center gap-3"><a href="/" class="btn btn-primary">Go home</a><a href="/app/" class="btn btn-secondary">My dashboard</a></div>
+</div>
+{% endblock %}

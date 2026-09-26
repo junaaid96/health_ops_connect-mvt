@@ -1,0 +1,65 @@
+{% extends "layouts/app.html" %}
+{% load ui static %}
+{% block title %}Command center{% endblock %}
+{% block head %}<script defer src="{% static 'vendor/chart.umd.min.js' %}"></script><script defer src="{% static 'js/charts.js' %}"></script>{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div><h1 class="text-2xl font-bold sm:text-3xl">Command center</h1><p class="mt-1 muted">Live hospital operations · {{ today|date:"l j F" }}</p></div>
+  <div class="flex flex-wrap gap-2">
+    {% if pending_doctors %}<a href="{% url 'operations:doctors' %}" class="btn btn-secondary btn-sm">{% icon "badge-check" "size-4" %}{{ pending_doctors }} doctor{{ pending_doctors|pluralize }} to verify</a>{% endif %}
+    <a href="{% url 'operations:front_desk' %}" class="btn btn-primary btn-sm">{% icon "clipboard-list" "size-4" %}Front desk</a>
+  </div>
+</div>
+
+<dl class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+  <div class="card card-pad"><dt class="stat-label">Visits today</dt><dd class="stat-value">{{ counts.total }}</dd><p class="mt-1 text-xs muted">{{ counts.video }} by video</p></div>
+  <div class="card card-pad"><dt class="stat-label">Waiting</dt><dd class="stat-value">{{ counts.waiting }}</dd><p class="mt-1 text-xs muted">{{ counts.in_progress }} in consultation</p></div>
+  <div class="card card-pad"><dt class="stat-label">Completed</dt><dd class="stat-value">{{ counts.completed }}</dd><p class="mt-1 text-xs muted">{{ attendance }}% attendance</p></div>
+  <div class="card card-pad"><dt class="stat-label">Urgent cases</dt><dd class="stat-value {% if counts.urgent %}text-rose-700 dark:text-rose-300{% endif %}">{{ counts.urgent }}</dd><p class="mt-1 text-xs muted">flagged by triage</p></div>
+  <div class="card card-pad"><dt class="stat-label">Collected today</dt><dd class="stat-value">{{ revenue_today|money }}</dd><p class="mt-1 text-xs muted">{{ outstanding_count }} unpaid · {{ outstanding_total|money }}</p></div>
+  <div class="card card-pad"><dt class="stat-label">Bed occupancy</dt><dd class="stat-value">{{ occupancy }}%</dd><p class="mt-1 text-xs muted">{{ beds.available }} free · {{ beds.cleaning }} cleaning</p></div>
+</dl>
+
+<div class="mt-6 grid gap-6 2xl:grid-cols-[1fr_24rem]">
+  <section class="card overflow-hidden" aria-labelledby="load-h">
+    <div class="border-b border-slate-100 px-5 py-4 dark:border-white/5"><h2 id="load-h" class="card-title">Doctor load today</h2><p class="text-xs muted">Utilisation = booked or past slots ÷ total slots</p></div>
+    <div class="overflow-x-auto">
+      <table class="table min-w-[42rem]">
+        <thead><tr><th>Doctor</th><th>Utilisation</th><th>Waiting</th><th>Now seeing</th><th>Avg</th></tr></thead>
+        <tbody>
+          {% for r in load %}
+          <tr>
+            <td><div class="flex items-center gap-3">{% include "components/avatar.html" with person=r.doctor.user size="size-8" text="text-xs" %}<div><p class="font-medium">{{ r.doctor.name }}</p><p class="text-xs muted">{{ r.doctor.specialty.name }}</p></div></div></td>
+            <td class="w-48"><div class="flex items-center gap-2"><div class="h-2 flex-1 overflow-hidden rounded-full bg-brand-100 dark:bg-brand-400/15"><div class="h-full rounded-full {% if r.utilization >= 90 %}bg-amber-500{% else %}bg-brand-600{% endif %}" style="width: {{ r.utilization }}%"></div></div><span class="w-10 text-right text-xs tabular-nums">{{ r.utilization }}%</span></div></td>
+            <td class="tabular-nums">{% if r.waiting >= 4 %}<span class="badge badge-amber">{% icon "users" "size-3.5" %}{{ r.waiting }}</span>{% else %}{{ r.waiting }}{% endif %}</td>
+            <td>{% if r.current %}<span class="badge badge-amber">{% icon "stethoscope" "size-3.5" %}Token {{ r.current.token }}</span>{% else %}<span class="text-xs muted">Idle</span>{% endif %}</td>
+            <td class="tabular-nums muted">{{ r.avg }} min</td>
+          </tr>
+          {% empty %}<tr><td colspan="5" class="py-10 text-center muted">No clinics running today.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="space-y-6">
+    <section class="card card-pad">
+      <div class="flex items-center justify-between"><h2 class="card-title">Wards</h2><a href="{% url 'operations:beds' %}" class="text-sm font-medium text-brand-700 hover:underline dark:text-brand-300">Bed board</a></div>
+      <ul class="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-1">
+        {% for w in wards %}
+        <li><div class="flex justify-between text-sm"><span class="font-medium">{{ w.name }}</span><span class="tabular-nums muted">{{ w.occupied }}/{{ w.total }}</span></div>
+          <div class="mt-1 h-2 overflow-hidden rounded-full bg-brand-100 dark:bg-brand-400/15"><div class="h-full rounded-full {% widthratio w.occupied w.total 100 as pct %}{% if pct|add:0 >= 90 %}bg-rose-500{% elif pct|add:0 >= 75 %}bg-amber-500{% else %}bg-brand-600{% endif %}" style="width: {% widthratio w.occupied w.total 100 %}%"></div></div></li>
+        {% empty %}<li class="text-sm muted">No wards configured.</li>{% endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+
+<section class="card card-pad viz-root mt-6" aria-labelledby="trend-h">
+  <h2 id="trend-h" class="card-title">Appointments · last 14 days</h2>
+  <div class="relative mt-4 h-64"><canvas data-chart="bar" data-config="ops-trend" role="img" aria-label="Appointments per day by outcome; values in the table below"></canvas></div>
+  {{ trend_chart|json_script:"ops-trend" }}
+  <details class="mt-3"><summary class="cursor-pointer text-sm font-medium text-brand-700 dark:text-brand-300">View as table</summary>
+    <div class="mt-2 overflow-x-auto"><table class="table text-sm"><thead><tr><th>Day</th><th class="text-right">Completed</th><th class="text-right">Open</th><th class="text-right">Missed / cancelled</th></tr></thead>
+      <tbody class="tabular-nums">{% for t in trend %}<tr><td>{{ t.label }}</td><td class="text-right">{{ t.completed }}</td><td class="text-right">{{ t.open }}</td><td class="text-right">{{ t.missed }}</td></tr>{% endfor %}</tbody></table></div></details>
+</section>
+{% endblock %}

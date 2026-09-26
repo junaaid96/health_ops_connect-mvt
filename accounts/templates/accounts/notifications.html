@@ -1,0 +1,34 @@
+{% extends "layouts/app.html" %}
+{% load ui %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div><h1 class="text-2xl font-bold">Notifications</h1><p class="mt-1 muted">Bookings, queue updates and results — newest first.</p></div>
+    {% if unread_notifications %}
+    <form method="post" action="{% url 'accounts:notifications_read_all' %}">{% csrf_token %}<button class="btn btn-secondary btn-sm">{% icon "check-check" "size-4" %}Mark all as read</button></form>
+    {% endif %}
+  </div>
+  <div class="card mt-6 divide-y divide-slate-100 overflow-hidden dark:divide-white/5">
+    {% for n in items %}
+    <a href="{% url 'accounts:notification_open' n.pk %}" class="flex gap-4 px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-white/[0.03] {% if not n.is_read %}bg-brand-50/40 dark:bg-brand-400/5{% endif %}">
+      <span class="mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl
+        {% if n.kind == 'success' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300{% elif n.kind == 'warning' %}bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300{% elif n.kind == 'alert' %}bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300{% else %}bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300{% endif %}">
+        {% if n.kind == 'success' %}{% icon "circle-check" "size-[18px]" %}{% elif n.kind == 'warning' %}{% icon "triangle-alert" "size-[18px]" %}{% elif n.kind == 'alert' %}{% icon "bell-ring" "size-[18px]" %}{% else %}{% icon "info" "size-[18px]" %}{% endif %}
+      </span>
+      <div class="min-w-0 flex-1">
+        <p class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">{{ n.title }}{% if not n.is_read %}<span class="size-2 rounded-full bg-brand-600" aria-label="Unread"></span>{% endif %}</p>
+        {% if n.body %}<p class="mt-0.5 text-sm muted">{{ n.body }}</p>{% endif %}
+        <p class="mt-1 text-xs text-slate-400">{{ n.created_at|timesince }} ago</p>
+      </div>
+    </a>
+    {% empty %}
+    <div class="px-6 py-16 text-center">
+      <span class="mx-auto grid size-12 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5">{% icon "bell-off" "size-6" %}</span>
+      <p class="mt-4 font-semibold">You're all caught up</p>
+      <p class="mt-1 text-sm muted">Booking confirmations and queue alerts will appear here.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

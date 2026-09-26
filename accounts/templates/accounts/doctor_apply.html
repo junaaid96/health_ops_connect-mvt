@@ -1,0 +1,51 @@
+{% extends "layouts/auth.html" %}
+{% load ui %}
+{% block title %}Join as a doctor{% endblock %}
+{% block form_width %}max-w-2xl{% endblock %}
+{% block aside_kicker %}Why doctors join{% endblock %}
+{% block aside %}
+<ul class="mt-8 space-y-7">
+  <li class="flex gap-4"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white/10">{% icon "clipboard-list" "size-5" %}</span><div><p class="font-semibold text-white">Patients arrive prepared</p><p class="mt-1 text-sm text-brand-100/80">Reason, symptoms, severity and health passport — before they walk in.</p></div></li>
+  <li class="flex gap-4"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white/10">{% icon "list-ordered" "size-5" %}</span><div><p class="font-semibold text-white">A queue that runs itself</p><p class="mt-1 text-sm text-brand-100/80">Urgent cases rise to the top. One click calls the next patient.</p></div></li>
+  <li class="flex gap-4"><span class="grid size-10 shrink-0 place-items-center rounded-xl bg-white/10">{% icon "shield-alert" "size-5" %}</span><div><p class="font-semibold text-white">Safer prescribing</p><p class="mt-1 text-sm text-brand-100/80">Automatic allergy checks and verifiable QR prescriptions.</p></div></li>
+</ul>
+{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold">Join as a doctor</h1>
+<p class="mt-2 muted">Your profile goes live once our team verifies your licence — usually within a working day.</p>
+
+{% include "components/form_errors.html" %}
+<form method="post" enctype="multipart/form-data" class="mt-8 space-y-8" novalidate>
+  {% csrf_token %}
+  <fieldset class="space-y-5">
+    <legend class="mb-4 text-sm font-semibold uppercase tracking-wider muted">Account</legend>
+    <div class="grid gap-5 sm:grid-cols-2">
+      {% include "components/field.html" with field=form.first_name %}
+      {% include "components/field.html" with field=form.last_name %}
+      {% include "components/field.html" with field=form.email %}
+      {% include "components/field.html" with field=form.phone %}
+      {% include "components/field.html" with field=form.password1 %}
+      {% include "components/field.html" with field=form.password2 %}
+    </div>
+  </fieldset>
+  <fieldset class="space-y-5">
+    <legend class="mb-4 text-sm font-semibold uppercase tracking-wider muted">Practice</legend>
+    <div class="grid gap-5 sm:grid-cols-2">
+      {% include "components/field.html" with field=form.specialty %}
+      {% include "components/field.html" with field=form.title %}
+      {% include "components/field.html" with field=form.qualifications %}
+      {% include "components/field.html" with field=form.license_number %}
+      {% include "components/field.html" with field=form.years_experience %}
+      {% include "components/field.html" with field=form.fee %}
+      {% include "components/field.html" with field=form.languages wrapper_class="sm:col-span-2" %}
+      {% include "components/field.html" with field=form.bio wrapper_class="sm:col-span-2" %}
+      {% include "components/field.html" with field=form.photo wrapper_class="sm:col-span-2" %}
+    </div>
+    <div class="flex flex-wrap gap-6">
+      {% include "components/field.html" with field=form.offers_in_person %}
+      {% include "components/field.html" with field=form.offers_video %}
+    </div>
+  </fieldset>
+  <button type="submit" class="btn btn-primary btn-lg w-full">Submit application</button>
+</form>
+{% endblock %}

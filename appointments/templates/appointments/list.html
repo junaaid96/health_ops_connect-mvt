@@ -1,0 +1,54 @@
+{% extends "layouts/app.html" %}
+{% load ui %}
+{% block title %}{% if user.is_doctor %}Appointments{% else %}My visits{% endif %}{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div><h1 class="text-2xl font-bold">{% if user.is_doctor %}Appointments{% else %}My visits{% endif %}</h1>
+    <p class="mt-1 muted">{% if user.is_doctor %}Everyone booked with you.{% else %}Upcoming visits, history and prescriptions.{% endif %}</p></div>
+  <div class="inline-flex rounded-xl bg-slate-100 p-1 dark:bg-white/5">
+    <a href="?tab=upcoming" class="tab {% if tab == 'upcoming' %}is-active{% endif %}">Upcoming</a>
+    <a href="?tab=past" class="tab {% if tab == 'past' %}is-active{% endif %}">Past &amp; cancelled</a>
+  </div>
+</div>
+
+<div class="card mt-6 overflow-hidden">
+  {% if page.object_list %}
+  <ul class="divide-y divide-slate-100 dark:divide-white/5">
+    {% for a in page.object_list %}
+    <li>
+      <a href="{% if user.is_doctor %}{% url 'records:consult' a.code %}{% else %}{{ a.get_absolute_url }}{% endif %}" class="flex flex-wrap items-center gap-4 px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-white/[0.03]">
+        <div class="w-16 shrink-0 rounded-xl bg-slate-50 py-2 text-center dark:bg-white/5">
+          <p class="text-[11px] font-semibold uppercase muted">{{ a.scheduled_at|date:"M" }}</p>
+          <p class="text-xl font-bold tabular-nums">{{ a.scheduled_at|date:"j" }}</p>
+        </div>
+        {% if user.is_doctor %}{% include "components/avatar.html" with person=a.patient %}{% endif %}
+        <div class="min-w-0 flex-1">
+          <p class="truncate font-semibold">{% if user.is_doctor %}{{ a.patient.display_name }}{% else %}{{ a.doctor.name }}{% endif %}</p>
+          <p class="truncate text-sm muted">{{ a.scheduled_at|date:"D, g:i A" }} · {% if user.is_doctor %}{{ a.reason }}{% else %}{{ a.doctor.specialty.name }}{% endif %}</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          {% if a.mode == "video" %}<span class="badge badge-slate">{% icon "video" "size-3.5" %}Video</span>{% endif %}
+          {% if a.urgency > 1 and a.is_open %}{% urgency_badge a.urgency %}{% endif %}
+          {% status_badge a %}
+          {% icon "chevron-right" "size-4 text-slate-400" %}
+        </div>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="px-6 py-16 text-center">
+    <span class="mx-auto grid size-12 place-items-center rounded-2xl bg-slate-100 text-slate-500 dark:bg-white/5">{% icon "calendar-search" "size-6" %}</span>
+    <p class="mt-4 font-semibold">{% if tab == 'upcoming' %}No upcoming visits{% else %}Nothing here yet{% endif %}</p>
+    {% if user.is_patient %}<a href="{% url 'clinic:directory' %}" class="btn btn-primary mt-5">{% icon "calendar-plus" "size-4" %}Book a visit</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% if page.has_other_pages %}
+<nav class="mt-6 flex items-center justify-center gap-2" aria-label="Pagination">
+  {% if page.has_previous %}<a class="btn btn-secondary btn-sm" href="?{% url_replace page=page.previous_page_number %}">Previous</a>{% endif %}
+  <span class="text-sm muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="btn btn-secondary btn-sm" href="?{% url_replace page=page.next_page_number %}">Next</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,7 +1,22 @@
-*.pyc
-__pycache__
-/__pycache__
-/__pycache__/
+# Python
+__pycache__/
+*.py[cod]
 /env
+/venv
+/.venv
+
+# Local config & data
+.env
 *.env
-.vscode
+!.env.example
+db.sqlite3
+/media/
+/staticfiles/
+
+# Frontend
+node_modules/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

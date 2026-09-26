@@ -1,0 +1,184 @@
+{% extends "layouts/public.html" %}
+{% load ui %}
+{% block title %}Care that runs on time{% endblock %}
+{% block content %}
+
+{# ---------- Hero ---------- #}
+<section class="relative overflow-hidden">
+  <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
+    <div class="absolute -top-40 right-[-10%] size-[36rem] rounded-full bg-brand-200/50 blur-3xl dark:bg-brand-700/20"></div>
+    <div class="absolute -left-40 top-40 size-[28rem] rounded-full bg-sky-100/70 blur-3xl dark:bg-sky-900/20"></div>
+  </div>
+  <div class="mx-auto grid max-w-7xl items-center gap-12 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:pb-24 lg:pt-20">
+    <div class="animate-fade-in">
+      <p class="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/70 px-3 py-1 text-sm font-medium text-brand-800 dark:border-brand-400/30 dark:bg-white/5 dark:text-brand-200">
+        <span class="relative flex size-2"><span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex size-2 rounded-full bg-emerald-500"></span></span>
+        Live queue &amp; smart wait times
+      </p>
+      <h1 class="mt-5 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-6xl">Care that runs <span class="text-brand-700 dark:text-brand-400">on time.</span></h1>
+      <p class="mt-5 max-w-xl text-lg leading-relaxed text-slate-600 dark:text-slate-300">
+        Describe how you feel, get matched to the right specialist, book a real time slot and check in from your phone.
+        Wait wherever you like — we'll tell you when it's your turn.
+      </p>
+
+      <form action="{% url 'clinic:care_finder' %}" method="get" class="mt-8 max-w-xl" role="search">
+        <label for="hero-symptoms" class="sr-only">Describe your symptoms</label>
+        <div class="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-[var(--shadow-lift)] sm:flex-row dark:border-white/10 dark:bg-slate-900">
+          <div class="flex flex-1 items-center gap-2 px-2">
+            {% icon "wand-sparkles" "size-5 text-brand-600" %}
+            <input id="hero-symptoms" name="symptoms" class="w-full bg-transparent py-2.5 text-[15px] placeholder:text-slate-400 focus:outline-none" placeholder="e.g. headache and dizziness for 3 days" autocomplete="off">
+          </div>
+          <button class="btn btn-primary">Find the right doctor {% icon "arrow-right" "size-4" %}</button>
+        </div>
+      </form>
+      <p class="mt-3 text-sm muted">or <a class="font-semibold text-brand-700 underline-offset-4 hover:underline dark:text-brand-300" href="{% url 'clinic:directory' %}">browse all {{ stats.doctors }} doctors</a></p>
+
+      <dl class="mt-10 grid max-w-lg grid-cols-3 gap-6">
+        <div><dt class="text-sm muted">Specialists</dt><dd class="text-2xl font-bold tabular-nums">{{ stats.doctors }}</dd></div>
+        <div><dt class="text-sm muted">Specialties</dt><dd class="text-2xl font-bold tabular-nums">{{ stats.specialties }}</dd></div>
+        <div><dt class="text-sm muted">Avg. rating</dt><dd class="text-2xl font-bold tabular-nums">{% if stats.rating %}{{ stats.rating|floatformat:1 }}<span class="text-base muted">/5</span>{% else %}—{% endif %}</dd></div>
+      </dl>
+    </div>
+
+    {# Product preview: what a patient sees on visit day #}
+    <div class="relative mx-auto w-full max-w-md animate-fade-in pb-0 sm:pb-16 lg:max-w-none" aria-hidden="true">
+      <div class="card card-pad rotate-[-1.5deg] shadow-[var(--shadow-lift)]">
+        <div class="flex items-center justify-between">
+          <p class="eyebrow">Today · Checked in</p>
+          <span class="badge badge-violet">{% icon "map-pin-check" "size-3.5" %}Checked in</span>
+        </div>
+        <div class="mt-5 flex items-end justify-between">
+          <div>
+            <p class="text-sm muted">Your token</p>
+            <p class="text-6xl font-extrabold tabular-nums tracking-tight">014</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm muted">Estimated wait</p>
+            <p class="text-3xl font-bold tabular-nums text-brand-700 dark:text-brand-300">~12 min</p>
+          </div>
+        </div>
+        <div class="mt-5">
+          <div class="flex justify-between text-xs font-medium muted"><span>2 patients ahead</span><span>Room 204</span></div>
+          <div class="mt-2 h-2 overflow-hidden rounded-full bg-brand-100 dark:bg-brand-400/15"><div class="h-full w-2/3 rounded-full bg-brand-600"></div></div>
+        </div>
+        <div class="divider my-5"></div>
+        <div class="flex items-center gap-3">
+          <span class="avatar size-10 text-sm">NR</span>
+          <div class="flex-1"><p class="text-sm font-semibold">Dr. Nadia Rahman</p><p class="text-xs muted">Neurology · 10:40 AM</p></div>
+          <span class="btn btn-secondary btn-sm">{% icon "calendar-plus" "size-4" %}Add to calendar</span>
+        </div>
+      </div>
+      <div class="card absolute bottom-0 left-6 hidden w-64 rotate-[2deg] p-4 shadow-[var(--shadow-lift)] sm:block">
+        <div class="flex items-center gap-3">
+          <span class="grid size-10 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300">{% icon "qr-code" "size-5" %}</span>
+          <div><p class="text-sm font-semibold">Prescription verified</p><p class="text-xs muted">Scan-to-verify for pharmacies</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ---------- Specialties ---------- #}
+{% if specialties %}
+<section class="mx-auto max-w-7xl px-4 sm:px-6">
+  <div class="flex items-end justify-between gap-4">
+    <div><p class="eyebrow">Specialties</p><h2 class="mt-2 text-2xl font-bold sm:text-3xl">What do you need help with?</h2></div>
+    <a href="{% url 'clinic:directory' %}" class="btn btn-ghost btn-sm hidden sm:inline-flex">All doctors {% icon "arrow-right" "size-4" %}</a>
+  </div>
+  <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    {% for s in specialties %}
+    <a href="{% url 'clinic:directory' %}?specialty={{ s.slug }}" class="card group flex items-center gap-3 p-4 transition hover:border-brand-300 hover:shadow-[var(--shadow-lift)] dark:hover:border-brand-400/40">
+      <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-600 group-hover:text-white dark:bg-brand-400/10 dark:text-brand-300">{% icon s.icon "size-5" %}</span>
+      <span class="min-w-0"><span class="block truncate text-sm font-semibold">{{ s.name }}</span><span class="text-xs muted">{{ s.n }} doctor{{ s.n|pluralize }}</span></span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ---------- How it works ---------- #}
+<section class="mx-auto mt-24 max-w-7xl px-4 sm:px-6">
+  <div class="max-w-2xl"><p class="eyebrow">How it works</p><h2 class="mt-2 text-2xl font-bold sm:text-3xl">From “I don't feel well” to seen — without the waiting room.</h2></div>
+  <ol class="mt-10 grid gap-6 md:grid-cols-3">
+    {% for step in "123" %}
+    <li class="card card-pad relative">
+      <span class="absolute right-5 top-5 text-5xl font-extrabold text-slate-100 dark:text-white/5">0{{ step }}</span>
+      {% if step == "1" %}
+        <span class="grid size-11 place-items-center rounded-xl bg-brand-600 text-white">{% icon "wand-sparkles" "size-5" %}</span>
+        <h3 class="mt-4 text-lg font-semibold">Tell us what's wrong</h3>
+        <p class="mt-2 text-sm leading-relaxed muted">Our transparent care finder matches symptoms to the right specialty — and flags emergencies that shouldn't wait for an appointment.</p>
+      {% elif step == "2" %}
+        <span class="grid size-11 place-items-center rounded-xl bg-brand-600 text-white">{% icon "calendar-check" "size-5" %}</span>
+        <h3 class="mt-4 text-lg font-semibold">Book a real slot</h3>
+        <p class="mt-2 text-sm leading-relaxed muted">Live availability, in-person or video. Share your symptoms up-front so your doctor is prepared. Fully booked? Join the waitlist.</p>
+      {% else %}
+        <span class="grid size-11 place-items-center rounded-xl bg-brand-600 text-white">{% icon "smartphone" "size-5" %}</span>
+        <h3 class="mt-4 text-lg font-semibold">Check in from your phone</h3>
+        <p class="mt-2 text-sm leading-relaxed muted">Get a token and a live wait estimate learned from your doctor's real consultation times. We'll ping you when it's your turn.</p>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+{# ---------- Top doctors ---------- #}
+{% if doctors %}
+<section class="mx-auto mt-24 max-w-7xl px-4 sm:px-6">
+  <div class="flex items-end justify-between gap-4">
+    <div><p class="eyebrow">Top rated</p><h2 class="mt-2 text-2xl font-bold sm:text-3xl">Doctors patients recommend</h2></div>
+    <a href="{% url 'clinic:directory' %}?sort=rating" class="btn btn-secondary btn-sm">See all {% icon "arrow-right" "size-4" %}</a>
+  </div>
+  <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    {% for doctor in doctors %}
+      {% include "components/doctor_card.html" with next=soonest|get_item:doctor.pk %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ---------- Features ---------- #}
+<section class="mx-auto mt-24 max-w-7xl px-4 sm:px-6">
+  <div class="max-w-2xl"><p class="eyebrow">Built differently</p><h2 class="mt-2 text-2xl font-bold sm:text-3xl">Everything a modern hospital needs, in one calm place.</h2></div>
+  <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="card card-pad"><span class="text-brand-700 dark:text-brand-300">{% icon "timer" "size-6" %}</span><h3 class="mt-3 font-semibold">Triage-aware virtual queue</h3><p class="mt-1.5 text-sm leading-relaxed muted">Tokens instead of names on the waiting-room screen, ordered by clinical urgency then arrival — with honest wait estimates.</p></div>
+    <div class="card card-pad"><span class="text-brand-700 dark:text-brand-300">{% icon "heart-pulse" "size-6" %}</span><h3 class="mt-3 font-semibold">Health passport &amp; vitals</h3><p class="mt-1.5 text-sm leading-relaxed muted">Allergies, conditions and medications in one place; log blood pressure, glucose and more with trend charts and range alerts.</p></div>
+    <div class="card card-pad"><span class="text-brand-700 dark:text-brand-300">{% icon "shield-alert" "size-6" %}</span><h3 class="mt-3 font-semibold">Allergy safety net</h3><p class="mt-1.5 text-sm leading-relaxed muted">Prescriptions are checked against the patient's recorded allergies before they're issued. Overrides are explicit and logged.</p></div>
+    <div class="card card-pad"><span class="text-brand-700 dark:text-brand-300">{% icon "qr-code" "size-6" %}</span><h3 class="mt-3 font-semibold">Verifiable e-prescriptions</h3><p class="mt-1.5 text-sm leading-relaxed muted">Printable prescriptions with a QR code any pharmacy can scan to confirm they're genuine.</p></div>
+    <div class="card card-pad"><span class="text-brand-700 dark:text-brand-300">{% icon "shield-check" "size-6" %}</span><h3 class="mt-3 font-semibold">Your privacy log</h3><p class="mt-1.5 text-sm leading-relaxed muted">See exactly which clinician opened your record and when. Transparency by default.</p></div>
+    <div class="card card-pad"><span class="text-brand-700 dark:text-brand-300">{% icon "bell-ring" "size-6" %}</span><h3 class="mt-3 font-semibold">Smart waitlist</h3><p class="mt-1.5 text-sm leading-relaxed muted">Fully booked day? Join the waitlist and get notified the moment someone cancels.</p></div>
+  </div>
+</section>
+
+{# ---------- Testimonials ---------- #}
+{% if testimonials %}
+<section class="mx-auto mt-24 max-w-7xl px-4 sm:px-6">
+  <h2 class="text-2xl font-bold sm:text-3xl">What patients say</h2>
+  <div class="mt-6 grid gap-4 md:grid-cols-3">
+    {% for r in testimonials %}
+    <figure class="card card-pad">
+      <div class="flex gap-0.5 text-amber-400" aria-label="{{ r.rating }} out of 5 stars">{% for _ in "12345" %}{% if forloop.counter <= r.rating %}<svg viewBox="0 0 24 24" class="size-4 fill-current" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>{% endif %}{% endfor %}</div>
+      <blockquote class="mt-3 text-[15px] leading-relaxed">“{{ r.comment }}”</blockquote>
+      <figcaption class="mt-4 text-sm muted">{{ r.patient.first_name }} {{ r.patient.last_name|slice:":1" }}. · visited {{ r.doctor.name }}</figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ---------- CTA ---------- #}
+<section class="mx-auto mt-24 max-w-7xl px-4 sm:px-6">
+  <div class="relative overflow-hidden rounded-3xl bg-brand-900 px-6 py-12 text-white sm:px-12 dark:bg-brand-950">
+    <div aria-hidden="true" class="absolute -right-20 -top-20 size-80 rounded-full bg-brand-500/30 blur-3xl"></div>
+    <div class="relative grid items-center gap-8 md:grid-cols-[1fr_auto]">
+      <div>
+        <h2 class="text-2xl font-bold text-white sm:text-3xl">Are you a doctor?</h2>
+        <p class="mt-2 max-w-xl text-brand-100">Set your weekly hours once. Patients arrive with symptoms already captured, your queue runs itself and prescriptions are one click away.</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a href="{% url 'accounts:doctor_apply' %}" class="btn btn-lg bg-white text-brand-900 hover:bg-brand-50">Join as a doctor</a>
+        <a href="{% url 'accounts:signup' %}" class="btn btn-lg border border-white/30 text-white hover:bg-white/10">I'm a patient</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block body %}
+<div x-data="{ nav: false }" class="min-h-screen lg:grid lg:grid-cols-[17rem_1fr]">
+  {# Sidebar (desktop) #}
+  <aside class="hidden border-r border-slate-200/70 bg-white/60 lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col dark:border-white/10 dark:bg-slate-950/30">
+    <div class="flex h-16 items-center px-5">{% include "components/logo.html" %}</div>
+    <div class="flex-1 overflow-y-auto px-3 pb-6">{% include "layouts/app_nav.html" %}</div>
+    <div class="border-t border-slate-200/70 p-3 dark:border-white/10">
+      <div class="flex items-center gap-3 rounded-xl px-2 py-2">
+        {% include "components/avatar.html" with person=user size="size-9" text="text-xs" %}
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-semibold text-slate-900 dark:text-white">{{ user.display_name }}</p>
+          <p class="truncate text-xs muted">{% if user.is_ops %}Operations{% else %}{{ user.get_role_display }}{% endif %}</p>
+        </div>
+        <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
+          <button class="btn btn-ghost btn-sm !px-2" aria-label="Sign out" title="Sign out">{% icon "log-out" "size-4" %}</button>
+        </form>
+      </div>
+    </div>
+  </aside>
+
+  {# Mobile slide-over #}
+  <div x-cloak x-show="nav" class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
+    <div x-show="nav" x-transition.opacity class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="nav = false"></div>
+    <div x-show="nav" x-transition:enter="transition duration-200" x-transition:enter-start="-translate-x-full" x-transition:leave="transition duration-150" x-transition:leave-end="-translate-x-full"
+         class="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-white shadow-xl dark:bg-slate-950" @keydown.escape.window="nav = false">
+      <div class="flex h-16 items-center justify-between px-4">{% include "components/logo.html" %}
+        <button class="btn btn-ghost btn-sm !px-2" @click="nav = false" aria-label="Close menu">{% icon "x" "size-5" %}</button>
+      </div>
+      <div class="flex-1 overflow-y-auto px-3 pb-6">{% include "layouts/app_nav.html" %}</div>
+      <form method="post" action="{% url 'accounts:logout' %}" class="border-t border-slate-200 p-3 dark:border-white/10">{% csrf_token %}
+        <button class="nav-link w-full">{% icon "log-out" "size-[18px]" %}Sign out</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="flex min-w-0 flex-col">
+    <header class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200/70 bg-canvas/85 px-4 backdrop-blur-md sm:px-6 dark:border-white/10 dark:bg-canvas-dark/85">
+      <button class="btn btn-ghost btn-sm !px-2 lg:hidden" @click="nav = true" aria-label="Open menu">{% icon "menu" "size-5" %}</button>
+      <div class="min-w-0 flex-1">
+        {% block breadcrumbs %}<p class="truncate text-sm font-medium muted">{% block page_kicker %}{% now "l, j F" %}{% endblock %}</p>{% endblock %}
+      </div>
+      {% if user.is_patient %}
+      <a href="{% url 'clinic:directory' %}" class="btn btn-primary btn-sm hidden sm:inline-flex">{% icon "calendar-plus" "size-4" %}Book a visit</a>
+      {% endif %}
+      {% include "components/theme_toggle.html" %}
+      <a href="{% url 'accounts:notifications' %}" class="btn btn-ghost btn-sm relative !px-2" aria-label="Notifications{% if unread_notifications %} ({{ unread_notifications }} unread){% endif %}">
+        {% icon "bell" "size-[18px]" %}
+        {% if unread_notifications %}<span class="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-rose-600 px-1 text-[10px] font-bold leading-4 text-white">{{ unread_notifications }}</span>{% endif %}
+      </a>
+    </header>
+
+    {% include "components/messages.html" %}
+
+    {% if user.is_authenticated and not user.email_verified and not hide_verify_banner %}
+    <div class="border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900 sm:px-6 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-100">
+      <form method="post" action="{% url 'accounts:resend_verification' %}" class="flex flex-wrap items-center gap-x-3 gap-y-1">{% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        {% icon "mail-warning" "size-4" %}<span>Confirm <strong>{{ user.email }}</strong> to receive appointment updates by email.</span>
+        <button class="font-semibold underline underline-offset-2">Resend link</button>
+      </form>
+    </div>
+    {% endif %}
+
+    <main id="main" class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:py-8">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "layouts/app.html" %}
+{% load ui %}
+{% block title %}Front desk{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div><h1 class="text-2xl font-bold">Front desk</h1><p class="mt-1 muted">Today's arrivals — check in walk-ups, record payments, mark no-shows.</p></div>
+</div>
+<form method="get" class="mt-6 grid gap-3 sm:grid-cols-[1fr_14rem_12rem_auto]">
+  <label class="relative block"><span class="sr-only">Search</span><span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">{% icon "search" "size-[18px]" %}</span>
+    <input name="q" value="{{ filters.q }}" class="input pl-10" placeholder="Patient, phone or code"></label>
+  <select name="doctor" class="input select" aria-label="Doctor"><option value="">All doctors</option>{% for d in doctors %}<option value="{{ d.slug }}" {% if filters.doctor == d.slug %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select>
+  <select name="status" class="input select" aria-label="Status"><option value="">All statuses</option>{% for v, l in statuses %}<option value="{{ v }}" {% if filters.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <button class="btn btn-secondary">Filter</button>
+</form>
+
+<div class="card mt-4 overflow-x-auto">
+  <table class="table min-w-[56rem]">
+    <thead><tr><th>Time</th><th>Patient</th><th>Doctor</th><th>Status</th><th>Payment</th><th class="text-right">Actions</th></tr></thead>
+    <tbody>
+      {% for a in appointments %}
+      <tr>
+        <td class="whitespace-nowrap font-semibold tabular-nums">{{ a.scheduled_at|time:"g:i A" }}{% if a.queue_number %}<span class="block text-xs font-normal muted">Token {{ a.token }}</span>{% endif %}</td>
+        <td><p class="font-medium">{{ a.patient.display_name }}</p><p class="text-xs muted">{{ a.code }}{% if a.patient.phone %} · {{ a.patient.phone }}{% endif %}</p></td>
+        <td><p>{{ a.doctor.name }}</p><p class="text-xs muted">{{ a.get_mode_display }}</p></td>
+        <td><div class="flex flex-wrap gap-1">{% status_badge a %}{% if a.urgency == 3 and a.is_open %}{% urgency_badge 3 "Urgent" %}{% endif %}</div></td>
+        <td>{% if a.payment_status == "paid" %}<span class="badge badge-emerald">{% icon "check" "size-3.5" %}Paid</span>{% else %}<span class="text-sm">{{ a.fee|money }}</span>{% endif %}</td>
+        <td>
+          <form method="post" action="{% url 'operations:desk_action' a.code %}" class="flex justify-end gap-1.5">{% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            {% if a.can_check_in %}<button name="action" value="check_in" class="btn btn-primary btn-sm">Check in</button>{% endif %}
+            {% if a.payment_status != "paid" and a.status != "cancelled" %}<button name="action" value="paid" class="btn btn-secondary btn-sm">{% icon "banknote" "size-4" %}Paid</button>{% endif %}
+            {% if a.status == "booked" or a.status == "checked_in" %}{% if a.scheduled_at < now %}<button name="action" value="no_show" class="btn btn-ghost btn-sm">No-show</button>{% endif %}
+              <button name="action" value="cancel" class="btn btn-danger-ghost btn-sm" onclick="return confirm('Cancel {{ a.code }}? The patient will be notified.')">Cancel</button>{% endif %}
+          </form>
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="6" class="py-12 text-center muted">No appointments match.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

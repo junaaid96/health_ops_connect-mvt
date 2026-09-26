@@ -1,0 +1,35 @@
+{% extends "layouts/public.html" %}
+{% load ui %}
+{% block title %}Care finder{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+  <div class="max-w-2xl">
+    <p class="eyebrow">Care finder</p>
+    <h1 class="mt-2 text-3xl font-bold sm:text-4xl">Not sure who to see?</h1>
+    <p class="mt-3 text-lg muted">Describe what's going on in your own words. We'll suggest the right specialty — and show you exactly which words led there.</p>
+  </div>
+
+  <form method="get" class="card card-pad mt-8" hx-get="{% url 'clinic:care_finder' %}" hx-target="#care-results" hx-push-url="true" hx-indicator="#care-results"
+        x-data="{ severity: {{ severity }} }">
+    <label for="symptoms" class="label">What symptoms do you have?</label>
+    <textarea id="symptoms" name="symptoms" rows="3" class="input" placeholder="e.g. I've had a headache and dizziness for three days, worse in the evening" required>{{ text }}</textarea>
+    <div class="mt-3 flex flex-wrap gap-2">
+      {% for ex in examples %}
+      <button type="button" class="chip text-xs" @click="$root.querySelector('#symptoms').value = '{{ ex|escapejs }}'">{{ ex }}</button>
+      {% endfor %}
+    </div>
+    <div class="mt-6 grid items-end gap-6 sm:grid-cols-[1fr_auto]">
+      <div>
+        <label for="severity" class="label">How bad is it? <span class="font-semibold text-brand-700 dark:text-brand-300" x-text="severity + ' / 10'">{{ severity }} / 10</span></label>
+        <input id="severity" type="range" name="severity" min="1" max="10" x-model="severity" class="w-full accent-brand-600">
+        <div class="mt-1 flex justify-between text-xs muted"><span>Mild</span><span>Moderate</span><span>Severe</span></div>
+      </div>
+      <button class="btn btn-primary btn-lg">{% icon "wand-sparkles" "size-5" %}Find care</button>
+    </div>
+  </form>
+
+  <div id="care-results" class="mt-8">{% include "clinic/_care_results.html" %}</div>
+
+  <p class="mt-10 text-center text-xs muted">The care finder gives routing suggestions, not a diagnosis. If you're worried, book a General Medicine visit.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "layouts/app.html" %}
+{% load ui %}
+{% block title %}Schedule & profile{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div><h1 class="text-2xl font-bold">Schedule &amp; profile</h1><p class="mt-1 muted">Set recurring hours once — slots are generated automatically and double-booking is impossible.</p></div>
+  {% if not doctor.is_verified %}<span class="badge badge-amber">{% icon "hourglass" "size-3.5" %}Awaiting verification</span>{% else %}<span class="badge badge-emerald">{% icon "badge-check" "size-3.5" %}Verified &amp; listed</span>{% endif %}
+</div>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-[1fr_22rem]">
+  <div class="space-y-6">
+    <form method="post" class="card" x-data novalidate>{% csrf_token %}
+      <input type="hidden" name="action" value="availability">
+      {{ formset.management_form }}
+      <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-white/5">
+        <h2 class="card-title">Weekly hours</h2>
+        <button class="btn btn-primary btn-sm">{% icon "save" "size-4" %}Save hours</button>
+      </div>
+      {% if formset.non_form_errors %}<div class="alert alert-error m-5">{{ formset.non_form_errors }}</div>{% endif %}
+      <div class="overflow-x-auto">
+        <table class="table min-w-[40rem]">
+          <thead><tr><th>Day</th><th>From</th><th>To</th><th>Slot length (min)</th><th class="text-right">Remove</th></tr></thead>
+          <tbody>
+            {% for f in formset %}
+            <tr>
+              <td>{{ f.id }}{{ f.weekday }}{% for e in f.errors.values %}<p class="error-text">{{ e.0 }}</p>{% endfor %}{% for e in f.non_field_errors %}<p class="error-text">{{ e }}</p>{% endfor %}</td>
+              <td>{{ f.start_time }}</td>
+              <td>{{ f.end_time }}</td>
+              <td class="w-36">{{ f.slot_minutes }}</td>
+              <td class="text-right">{% if f.instance.pk %}<label class="inline-flex items-center gap-2 text-sm text-rose-700 dark:text-rose-300">{{ f.DELETE }}<span class="sr-only">Remove</span>{% icon "trash-2" "size-4" %}</label>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="px-5 py-3 text-xs muted">Add one row per block (e.g. a morning and an evening session). Save to get another blank row.</p>
+    </form>
+
+    <form method="post" enctype="multipart/form-data" class="card card-pad space-y-5" novalidate>{% csrf_token %}
+      <input type="hidden" name="action" value="profile">
+      <div class="flex items-center justify-between"><h2 class="card-title">Public profile</h2><a href="{{ doctor.get_absolute_url }}" class="btn btn-ghost btn-sm">{% icon "eye" "size-4" %}Preview</a></div>
+      {% include "components/form_errors.html" with form=profile_form %}
+      <div class="grid gap-5 sm:grid-cols-2">
+        {% include "components/field.html" with field=profile_form.title %}
+        {% include "components/field.html" with field=profile_form.qualifications %}
+        {% include "components/field.html" with field=profile_form.years_experience %}
+        {% include "components/field.html" with field=profile_form.fee %}
+        {% include "components/field.html" with field=profile_form.languages %}
+        {% include "components/field.html" with field=profile_form.room %}
+        {% include "components/field.html" with field=profile_form.bio wrapper_class="sm:col-span-2" %}
+        {% include "components/field.html" with field=profile_form.video_link wrapper_class="sm:col-span-2" %}
+        {% include "components/field.html" with field=profile_form.photo wrapper_class="sm:col-span-2" %}
+      </div>
+      <div class="flex flex-wrap gap-6">
+        {% include "components/field.html" with field=profile_form.offers_in_person %}
+        {% include "components/field.html" with field=profile_form.offers_video %}
+      </div>
+      <div class="flex justify-end"><button class="btn btn-primary">Save profile</button></div>
+    </form>
+  </div>
+
+  <aside class="space-y-6">
+    <section class="card card-pad">
+      <h2 class="card-title">Next 7 days</h2>
+      <ul class="mt-4 space-y-2">
+        {% for d, open_count, total in calendar %}
+        <li class="flex items-center gap-3 text-sm">
+          <span class="w-20 font-medium">{{ d|date:"D j M" }}</span>
+          {% if total %}
+          <span class="h-2 flex-1 overflow-hidden rounded-full bg-brand-100 dark:bg-brand-400/15">
+            <span class="block h-full rounded-full bg-brand-600" style="width: calc(100% - {% widthratio open_count total 100 %}%)"></span>
+          </span>
+          <span class="w-20 text-right text-xs tabular-nums muted">{{ open_count }}/{{ total }} free</span>
+          {% else %}<span class="flex-1 text-xs muted">No hours</span>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="mt-3 text-xs muted">Bar shows how full each day is.</p>
+    </section>
+
+    <section class="card card-pad">
+      <h2 class="card-title">Time off</h2>
+      <form method="post" class="mt-4 space-y-3" novalidate>{% csrf_token %}
+        <input type="hidden" name="action" value="time_off">
+        {% include "components/field.html" with field=time_off_form.date %}
+        {% include "components/field.html" with field=time_off_form.reason %}
+        <button class="btn btn-secondary w-full">{% icon "calendar-off" "size-4" %}Block this day</button>
+      </form>
+      <ul class="mt-4 divide-y divide-slate-100 dark:divide-white/5">
+        {% for off in time_off %}
+        <li class="flex items-center justify-between py-2 text-sm">
+          <span><span class="font-medium">{{ off.date|date:"D j M" }}</span>{% if off.reason %} <span class="muted">· {{ off.reason }}</span>{% endif %}</span>
+          <form method="post" action="{% url 'clinic:delete_time_off' off.pk %}">{% csrf_token %}<button class="btn btn-danger-ghost btn-sm !px-2" aria-label="Remove time off">{% icon "x" "size-4" %}</button></form>
+        </li>
+        {% empty %}<li class="py-2 text-sm muted">No upcoming time off.</li>{% endfor %}
+      </ul>
+    </section>
+  </aside>
+</div>
+{% endblock %}

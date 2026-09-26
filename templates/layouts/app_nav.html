@@ -1,0 +1,35 @@
+{% load ui %}
+<nav class="grid gap-1" aria-label="App">
+  {% if user.is_ops %}
+    <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Operations</p>
+    <a href="{% url 'operations:dashboard' %}" class="nav-link {% if request.path == '/app/ops/' %}is-active{% endif %}">{% icon "activity" "size-[18px]" %}Command center</a>
+    <a href="{% url 'operations:front_desk' %}" class="nav-link {% active '/app/ops/front-desk' %}">{% icon "clipboard-list" "size-[18px]" %}Front desk</a>
+    <a href="{% url 'operations:beds' %}" class="nav-link {% active '/app/ops/beds' %}">{% icon "bed-double" "size-[18px]" %}Bed board</a>
+    <a href="{% url 'operations:doctors' %}" class="nav-link {% active '/app/ops/doctors' %}">{% icon "badge-check" "size-[18px]" %}Doctor verification</a>
+    <a href="{% url 'clinic:directory' %}" class="nav-link {% active '/doctors' %}">{% icon "search" "size-[18px]" %}Directory</a>
+    {% if user.is_superuser %}<a href="{% url 'admin:index' %}" class="nav-link">{% icon "settings-2" "size-[18px]" %}Admin console</a>{% endif %}
+  {% elif user.is_doctor %}
+    <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Clinic</p>
+    <a href="{% url 'core:dashboard' %}" class="nav-link {% if request.path == '/app/' %}is-active{% endif %}">{% icon "layout-dashboard" "size-[18px]" %}Today</a>
+    <a href="{% url 'appointments:list' %}" class="nav-link {% active '/app/visits' %}">{% icon "calendar-days" "size-[18px]" %}Appointments</a>
+    <a href="{% url 'clinic:schedule' %}" class="nav-link {% active '/app/schedule' %}">{% icon "calendar-clock" "size-[18px]" %}Schedule &amp; profile</a>
+    <a href="{{ user.doctor.get_absolute_url }}" class="nav-link">{% icon "user-round" "size-[18px]" %}Public profile</a>
+  {% else %}
+    <p class="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">My care</p>
+    <a href="{% url 'core:dashboard' %}" class="nav-link {% if request.path == '/app/' %}is-active{% endif %}">{% icon "layout-dashboard" "size-[18px]" %}Overview</a>
+    <a href="{% url 'appointments:list' %}" class="nav-link {% active '/app/visits' %}">{% icon "calendar-days" "size-[18px]" %}My visits</a>
+    <a href="{% url 'records:health' %}" class="nav-link {% active '/app/health' %}">{% icon "heart-pulse" "size-[18px]" %}Health passport</a>
+    <a href="{% url 'records:prescriptions' %}" class="nav-link {% active '/app/prescriptions' %}">{% icon "pill" "size-[18px]" %}Prescriptions</a>
+    <p class="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Get care</p>
+    <a href="{% url 'clinic:directory' %}" class="nav-link {% active '/doctors' %}">{% icon "search" "size-[18px]" %}Find a doctor</a>
+    <a href="{% url 'clinic:care_finder' %}" class="nav-link {% active '/care-finder' %}">{% icon "wand-sparkles" "size-[18px]" %}Care finder</a>
+  {% endif %}
+  <p class="px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Account</p>
+  <a href="{% url 'accounts:notifications' %}" class="nav-link {% active '/accounts/notifications' %}">
+    {% icon "bell" "size-[18px]" %}Notifications
+    {% if unread_notifications %}<span class="ml-auto rounded-full bg-brand-700 px-2 py-0.5 text-[11px] font-bold text-white dark:bg-brand-400 dark:text-brand-950">{{ unread_notifications }}</span>{% endif %}
+  </a>
+  {% if user.is_patient %}<a href="{% url 'records:privacy' %}" class="nav-link {% active '/app/privacy' %}">{% icon "shield-check" "size-[18px]" %}Privacy log</a>{% endif %}
+  <a href="{% url 'accounts:settings' %}" class="nav-link {% active '/accounts/settings' %}">{% icon "settings" "size-[18px]" %}Settings</a>
+  <a href="{% url 'operations:queue_display' %}" class="nav-link" target="_blank" rel="noopener">{% icon "tv" "size-[18px]" %}Waiting-room screen{% icon "arrow-up-right" "size-3.5 ml-auto opacity-60" %}</a>
+</nav>

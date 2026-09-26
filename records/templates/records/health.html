@@ -1,0 +1,83 @@
+{% extends "layouts/app.html" %}
+{% load ui static %}
+{% block title %}Health passport{% endblock %}
+{% block head %}<script defer src="{% static 'vendor/chart.umd.min.js' %}"></script><script defer src="{% static 'js/charts.js' %}"></script>{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div><h1 class="text-2xl font-bold">Health passport</h1><p class="mt-1 muted">What every clinician sees before your visit. Keep it current — it keeps you safe.</p></div>
+  <div class="flex items-center gap-3">
+    <div class="text-right"><p class="text-xs muted">Profile complete</p><p class="text-lg font-bold tabular-nums">{{ profile.completeness }}%</p></div>
+    <div class="size-12 rounded-full" style="background: conic-gradient(var(--color-brand-600) {{ profile.completeness }}%, color-mix(in oklab, var(--color-brand-600) 15%, transparent) 0)" role="img" aria-label="{{ profile.completeness }} percent complete"><div class="m-[5px] size-[38px] rounded-full bg-canvas dark:bg-canvas-dark"></div></div>
+  </div>
+</div>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-[1fr_24rem]">
+  <div class="space-y-6">
+    <section class="card card-pad" aria-labelledby="vitals-h">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="vitals-h" class="card-title">Vitals trends</h2>
+        {% if latest %}<p class="text-xs muted">Last logged {{ latest.recorded_at|timesince }} ago</p>{% endif %}
+      </div>
+      {% if latest %}
+      <dl class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded-2xl bg-slate-50 p-3 dark:bg-white/5"><dt class="text-xs muted">Blood pressure</dt><dd class="text-xl font-bold tabular-nums">{{ latest.blood_pressure|default:"—" }}</dd></div>
+        <div class="rounded-2xl bg-slate-50 p-3 dark:bg-white/5"><dt class="text-xs muted">Heart rate</dt><dd class="text-xl font-bold tabular-nums">{{ latest.heart_rate|default:"—" }}<span class="text-xs font-medium muted"> bpm</span></dd></div>
+        <div class="rounded-2xl bg-slate-50 p-3 dark:bg-white/5"><dt class="text-xs muted">Glucose</dt><dd class="text-xl font-bold tabular-nums">{{ latest.glucose|default:"—" }}<span class="text-xs font-medium muted"> mg/dL</span></dd></div>
+        <div class="rounded-2xl bg-slate-50 p-3 dark:bg-white/5"><dt class="text-xs muted">SpO₂</dt><dd class="text-xl font-bold tabular-nums">{% if latest.spo2 %}{{ latest.spo2 }}%{% else %}—{% endif %}</dd></div>
+      </dl>
+      {% with flags=latest.flags %}{% if flags %}
+      <div class="mt-3 flex flex-wrap gap-2">{% for name, level, msg in flags %}<span class="badge {% if level == 'critical' %}badge-rose{% else %}badge-amber{% endif %}">{% icon "triangle-alert" "size-3.5" %}{{ name }}: {{ msg }}</span>{% endfor %}</div>
+      {% endif %}{% endwith %}
+      <div class="mt-5">{% include "records/_vitals_charts.html" with can_delete=True %}</div>
+      {% else %}
+      <div class="mt-4 rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-white/15">
+        <span class="mx-auto grid size-12 place-items-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-400/10 dark:text-brand-300">{% icon "activity" "size-6" %}</span>
+        <p class="mt-3 font-semibold">No readings yet</p><p class="mt-1 text-sm muted">Log your first measurement to start seeing trends.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <form method="post" class="card card-pad space-y-5" novalidate>{% csrf_token %}
+      <h2 class="card-title">Medical profile</h2>
+      {% include "components/form_errors.html" %}
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {% include "components/field.html" with field=form.date_of_birth %}
+        {% include "components/field.html" with field=form.sex %}
+        {% include "components/field.html" with field=form.blood_group %}
+        {% include "components/field.html" with field=form.height_cm label="Height (cm)" %}
+      </div>
+      <div class="rounded-2xl border border-rose-200 bg-rose-50/60 p-4 dark:border-rose-400/20 dark:bg-rose-400/5">
+        {% include "components/field.html" with field=form.allergies label="Allergies — checked automatically against every prescription" %}
+      </div>
+      <div class="grid gap-5 sm:grid-cols-2">
+        {% include "components/field.html" with field=form.chronic_conditions %}
+        {% include "components/field.html" with field=form.current_medications %}
+        {% include "components/field.html" with field=form.emergency_contact_name %}
+        {% include "components/field.html" with field=form.emergency_contact_phone %}
+      </div>
+      <input type="hidden" name="action" value="profile">
+      <div class="flex justify-end"><button class="btn btn-primary">Save passport</button></div>
+    </form>
+  </div>
+
+  <aside class="space-y-6">
+    <form method="post" class="card card-pad space-y-4 xl:sticky xl:top-24" novalidate>{% csrf_token %}
+      <input type="hidden" name="action" value="vitals">
+      <h2 class="card-title">Log vitals</h2>
+      <p class="text-xs muted">Fill in only what you measured.</p>
+      {% include "components/form_errors.html" with form=vital_form %}
+      <div class="grid grid-cols-2 gap-3">
+        {% include "components/field.html" with field=vital_form.systolic label="Systolic" %}
+        {% include "components/field.html" with field=vital_form.diastolic label="Diastolic" %}
+        {% include "components/field.html" with field=vital_form.heart_rate label="Heart rate" %}
+        {% include "components/field.html" with field=vital_form.spo2 label="SpO₂ %" %}
+        {% include "components/field.html" with field=vital_form.glucose label="Glucose" %}
+        {% include "components/field.html" with field=vital_form.temperature label="Temp °C" %}
+        {% include "components/field.html" with field=vital_form.weight_kg label="Weight kg" wrapper_class="col-span-2" %}
+        {% include "components/field.html" with field=vital_form.note wrapper_class="col-span-2" %}
+      </div>
+      <button class="btn btn-primary w-full">{% icon "plus" "size-4" %}Add reading</button>
+    </form>
+  </aside>
+</div>
+{% endblock %}
