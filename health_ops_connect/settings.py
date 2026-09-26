@@ -140,9 +140,35 @@ STORAGES = {
         )
     },
 }
-# Serve uploaded media from Django itself (fine for a small deployment; put a
-# CDN or object storage in front for real scale).
+# Serve uploaded media from Django itself (local development). In production
+# media goes to object storage, configured below.
 SERVE_MEDIA = env.bool("SERVE_MEDIA", default=True)
+
+# --- Object storage (Neon Object Storage, S3-compatible) ---------------------
+# Set AWS_STORAGE_BUCKET_NAME to store uploads (doctor photos, avatars) in a
+# bucket instead of the local disk. The bucket is private: files are served
+# through short-lived signed URLs. Neon requires path-style addressing + SigV4.
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME", default="")
+if AWS_STORAGE_BUCKET_NAME:
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "endpoint_url": env("AWS_ENDPOINT_URL_S3"),
+            "region_name": env("AWS_REGION", default="us-east-1"),
+            "access_key": env("AWS_ACCESS_KEY_ID"),
+            "secret_key": env("AWS_SECRET_ACCESS_KEY"),
+            "addressing_style": "path",
+            "signature_version": "s3v4",
+            "location": env("AWS_LOCATION", default="media"),
+            "default_acl": None,
+            "querystring_auth": True,
+            "querystring_expire": env.int("AWS_QUERYSTRING_EXPIRE", default=3600),
+            "file_overwrite": False,
+            "object_parameters": {"CacheControl": "private, max-age=3600"},
+        },
+    }
+    SERVE_MEDIA = False
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
