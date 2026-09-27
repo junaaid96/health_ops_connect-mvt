@@ -18,7 +18,9 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1", ".onrender.com", ".vercel.app"]),
     CSRF_TRUSTED_ORIGINS=(list, ["https://*.onrender.com", "https://*.vercel.app"]),
 )
-environ.Env.read_env(BASE_DIR / ".env")
+# Local development reads .env; hosted environments inject real env vars.
+if (BASE_DIR / ".env").exists():
+    environ.Env.read_env(BASE_DIR / ".env")
 
 DEBUG = env("DEBUG")
 SECRET_KEY = env("SECRET_KEY", default="dev-insecure-change-me" if DEBUG else environ.Env.NOTSET)
