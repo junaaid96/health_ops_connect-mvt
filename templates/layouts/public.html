@@ -73,8 +73,27 @@
         </ul>
       </div>
     </div>
-    <div class="border-t border-slate-200/70 py-6 text-center text-xs muted dark:border-white/10">
-      &copy; {% now "Y" %} {{ SITE_NAME }}. Built for better, calmer care.
+    <div class="border-t border-slate-200/70 dark:border-white/10">
+      <div class="mx-auto flex max-w-7xl flex-col items-center justify-center gap-3 px-4 py-6 text-center text-xs muted sm:px-6 md:flex-row md:justify-between md:text-left">
+        <p>&copy; {% now "Y" %} {{ SITE_NAME }}. Built for better, calmer care.</p>
+        <a
+          href="https://junaidul.pro.bd/codejborg"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Developed by CodeJBorg — visit developer website"
+          class="group inline-flex items-center gap-2 rounded-full border border-slate-300/70 bg-white/60 py-1.5 pr-3 pl-1.5 font-mono text-[11px] tracking-wide muted transition-colors duration-300 hover:border-slate-400 hover:bg-white hover:text-slate-900 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/30 dark:hover:bg-white/10 dark:hover:text-white"
+        >
+          <span class="flex size-6 items-center justify-center rounded-full bg-brand-700 text-white dark:bg-brand-500 dark:text-brand-950">
+            {% icon "code-xml" "size-3.5" "2.25" %}
+          </span>
+          <span>Developed by</span>
+          <span class="font-semibold text-slate-900 dark:text-white">
+            <span class="text-brand-700 dark:text-brand-300">&lt;</span>CodeJBorg<span class="text-brand-700 dark:text-brand-300"> /&gt;</span>
+          </span>
+          <span aria-hidden="true" class="inline-block h-3.5 w-[2px] bg-brand-700 motion-safe:animate-pulse dark:bg-brand-500"></span>
+          {% icon "arrow-up-right" "size-3.5 opacity-40 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:opacity-100" %}
+        </a>
+      </div>
     </div>
   </footer>
 </div>

@@ -30,3 +30,20 @@
 
 <p class="mt-8 text-center text-sm muted">New here? <a href="{% url 'accounts:signup' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="font-semibold text-brand-700 hover:underline dark:text-brand-300">Create a patient account</a></p>
 {% endblock %}
+{% block page_credit %}
+<div class="mx-auto w-full max-w-md">
+  <a
+    href="https://junaidul.pro.bd/codejborg"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Developed by CodeJBorg — visit developer website"
+    class="flex items-center justify-center gap-1.5 border-t border-slate-200/80 pt-3 font-mono text-[11px] muted transition-colors hover:text-slate-900 dark:border-white/10 dark:hover:text-white"
+  >
+    {% icon "code-xml" "size-3.5" %}
+    <span>Developed by</span>
+    <span class="font-semibold text-slate-900 dark:text-white">
+      <span class="text-brand-700 dark:text-brand-300">&lt;</span>CodeJBorg<span class="text-brand-700 dark:text-brand-300"> /&gt;</span>
+    </span>
+  </a>
+</div>
+{% endblock %}
