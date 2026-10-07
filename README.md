@@ -4,7 +4,7 @@
 right specialist, book a real time slot, check in from their phone and wait wherever they like. Doctors
 get a triage-ordered queue and a consultation workspace. Operations staff get a live command center.
 
-Live: https://health-ops-connect-mvt.onrender.com
+Live: https://health-ops-connect.vercel.app/
 
 ## What's inside
 
