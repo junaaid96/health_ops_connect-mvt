@@ -50,6 +50,12 @@
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
   }
+  /* Forbid page-level sideways scrolling. `clip` (unlike `hidden`) creates no
+     scroll container, so nothing can strand the page scrolled sideways and
+     `position: sticky` descendants keep working. */
+  html, body {
+    overflow-x: clip;
+  }
   body {
     @apply bg-canvas text-slate-800 dark:bg-canvas-dark dark:text-slate-200;
     font-feature-settings: "ss01", "cv11";
