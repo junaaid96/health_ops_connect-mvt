@@ -52,7 +52,7 @@ Live: https://health-ops-connect.vercel.app/
   Alpine.js for small interactions, Chart.js for charts, Lucide icons (inlined server-side)
 - WhiteNoise for static files, Gunicorn in production
 - Accessible by design: semantic HTML, keyboard focus styles, skip link, status never shown by colour
-  alone, chart data always available as a table, dark mode, reduced-motion support
+  alone, chart data always available as a table, reduced-motion support
 
 ## Project layout
 
